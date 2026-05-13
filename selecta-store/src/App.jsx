@@ -2,7 +2,11 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useState } from "react";
 import { useContext, useEffect } from "react";
 import AuthContext from "./contexts/AuthContext.jsx";
+import UserProtectedRoute from "./routes/UserProtectedRoute.jsx";
+import ProtectedRoute from "./routes/ProtectedRoute.jsx";
 
+import UserTable from "./components/dashboard/UserTable.jsx";
+import ProductTable from "./components/dashboard/ProductTable.jsx";
 import "./App.css";
 
 import Home from "./pages/Home";
@@ -18,6 +22,8 @@ import CartPage from "./pages/CartPage.jsx";
 import Blog from "./pages/Blog.jsx";
 import About from "./pages/About.jsx";
 import MyProfile from "./pages/MyProfile.jsx";
+import Dashboard from "./pages/DashBoard.jsx";
+
 
 function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -36,18 +42,43 @@ useEffect(() => {
 
         <Routes>
           <Route element={<Layouts toggleCart={toggleCart} />}>
+            {/* públicas */}
             <Route path="/" element={<Home />} />
             <Route path="/products" element={<Products />} />
             <Route path="/products/:id" element={<ProductDetail />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/checkout" element={<Checkout/>} />
-            <Route path="/cart" element={<CartPage/>} />
             <Route path="/blog" element={<Blog/>} />
             <Route path="/about" element={<About/>} />
-            <Route path="/profile" element={<MyProfile />} />
+            {/* protegidas solo para usuarios autenticados */}
+            <Route path="/checkout" element={
+              <UserProtectedRoute>
+                <Checkout />
+              </UserProtectedRoute>} />
+            <Route path="/cart" element={
+              <UserProtectedRoute>
+                <CartPage />
+              </UserProtectedRoute>} />
+            <Route path="/profile" element={
+              <UserProtectedRoute>
+                <MyProfile />
+              </UserProtectedRoute>} />
+
           </Route>
           <Route path="/login" element={<Login/>} />
           <Route path="/register" element={<Register/>} />
+
+          {/* protegida para admin */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="/dashboard/users" element={<UserTable />} />
+            <Route path="/dashboard/products" element={<ProductTable />} />
+          </Route>
         </Routes>
       </div>
     </Router>
