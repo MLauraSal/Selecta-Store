@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-import ProductTable from "../components/Dashboard/ProductTable";
-import UserTable from "../components/Dashboard/UserTable";
+import ProductTable from "../components/dashboard/ProductTable";
+import UserTable from "../components/dashboard/UserTable";
 
 export default function Dashboard () {
   const [tab, setTab] = useState("products");
