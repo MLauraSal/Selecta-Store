@@ -19,7 +19,7 @@ import {
         }}
       >
         <Toolbar className="flex justify-between min-h-[80px]">
-          {/* LEFT */}
+         
           <div className="flex items-center gap-3">
             <IconButton
               edge="start"
@@ -49,7 +49,7 @@ import {
             </div>
           </div>
   
-          {/* RIGHT */}
+        
           <div className="flex items-center gap-4">
             <div className="hidden sm:block text-right">
               <p className="text-text text-sm font-semibold">

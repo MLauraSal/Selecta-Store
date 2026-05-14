@@ -51,7 +51,7 @@ import {
     };
   
     const handleDelete = (id) => {
-      if (confirm("¿Estás seguro de eliminar este usuario?")) {
+      if (confirm("Are you sure you want to delete this user?")) {
         setUsers((prev) => prev.filter((user) => user.id !== id));
       }
     };
@@ -86,7 +86,7 @@ import {
               Users
             </p>
             <h2 className="text-2xl font-black text-text">
-              Gestión de usuarios
+            User management
             </h2>
           </div>
   
@@ -106,7 +106,7 @@ import {
               },
             }}
           >
-            Nuevo Usuario
+            New user
           </Button>
         </div>
   
@@ -121,10 +121,10 @@ import {
           <Table>
             <TableHead>
               <TableRow sx={{ backgroundColor: "#181818" }}>
-                {["Usuario", "Email", "Rol", "Acciones"].map((head) => (
+                {["User", "Email", "Rol", "Actions"].map((head) => (
                   <TableCell
                     key={head}
-                    align={head === "Acciones" ? "right" : "left"}
+                    align={head === "Actions" ? "right" : "left"}
                     sx={{
                       ...tableCellStyles,
                       color: "#C8A96A",
@@ -144,7 +144,7 @@ import {
               {users.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} align="center" sx={tableCellStyles}>
-                    No hay usuarios registrados.
+                  There are no registered users.
                   </TableCell>
                 </TableRow>
               ) : (

@@ -7,7 +7,7 @@ import {
     Button,
   } from "@mui/material";
   
-  import { useState, useEffect } from "react";
+  import { useState } from "react";
   
   const inputStyles = {
     "& .MuiInputBase-root": {
@@ -33,24 +33,10 @@ import {
   };
   
   const UserFormModal = ({ open, onClose, onSave, initialData }) => {
-    const [formData, setFormData] = useState({
-      name: "",
-      email: "",
-    });
-  
-    useEffect(() => {
-      if (initialData) {
-        setFormData({
-          name: initialData.name || "",
-          email: initialData.email || "",
-        });
-      } else {
-        setFormData({
-          name: "",
-          email: "",
-        });
-      }
-    }, [initialData]);
+    const [formData, setFormData] = useState(() => ({
+      name: initialData?.name || "",
+      email: initialData?.email || "",
+    }));
   
     const handleChange = (e) => {
       setFormData((prev) => ({

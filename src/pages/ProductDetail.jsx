@@ -128,7 +128,7 @@ export default function ProductDetail() {
             )}
           </motion.div>
 
-          {/* INFO */}
+         
           <motion.div
             initial={{ opacity: 0, x: 60 }}
             animate={{ opacity: 1, x: 0 }}

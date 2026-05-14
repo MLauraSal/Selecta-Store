@@ -14,18 +14,18 @@ export default function Favorites() {
           </p>
 
           <h1 className="text-4xl lg:text-5xl font-black text-text">
-            Mis favoritos
+          My favorites
           </h1>
 
           <p className="text-gray-400 mt-4">
-            Productos que guardaste para ver más tarde.
+          Products you saved to view later.
           </p>
         </div>
 
         {favorites.length === 0 ? (
           <div className="bg-[#181818] border border-[#2A2A2A] rounded-[32px] p-10 text-center">
             <p className="text-gray-400 mb-6">
-              Todavía no agregaste productos a favoritos.
+            You haven't added any products to your favorites yet..
             </p>
 
             <Link

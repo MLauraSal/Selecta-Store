@@ -40,7 +40,7 @@ import {
     };
   
     const handleDelete = (id) => {
-      if (confirm("¿Estás seguro de eliminar este producto?")) {
+      if (confirm("¿Are you sure you want to delete this product??")) {
         removeProduct(id);
       }
     };
@@ -61,8 +61,8 @@ import {
     };
   
     const getCategory = (category) => {
-      if (typeof category === "object") return category?.name || "Sin categoría";
-      return category || "Sin categoría";
+      if (typeof category === "object") return category?.name || "Uncategorized";
+      return category || "Uncategorized";
     };
   
     return (
@@ -73,7 +73,7 @@ import {
               Products
             </p>
             <h2 className="text-2xl font-black text-text">
-              Gestión de productos
+            Product Management
             </h2>
           </div>
   
@@ -93,7 +93,7 @@ import {
               },
             }}
           >
-            Nuevo Producto
+            New Product
           </Button>
         </div>
   
@@ -109,17 +109,17 @@ import {
             <TableHead>
               <TableRow sx={{ backgroundColor: "#181818" }}>
                 {[
-                  "Imagen",
-                  "Nombre",
-                  "Precio",
+                  "Image",
+                  "Name",
+                  "price",
                   "Stock",
-                  "Categoría",
-                  "Descripción",
-                  "Acciones",
+                  "Category",
+                  "Description",
+                  "Actions",
                 ].map((head) => (
                   <TableCell
                     key={head}
-                    align={head === "Acciones" ? "right" : "left"}
+                    align={head === "Actions" ? "right" : "left"}
                     sx={{
                       ...tableCellStyles,
                       color: "#C8A96A",
@@ -139,13 +139,13 @@ import {
               {loading ? (
                 <TableRow>
                   <TableCell colSpan={7} align="center" sx={tableCellStyles}>
-                    Cargando productos...
+                    Loading products...
                   </TableCell>
                 </TableRow>
               ) : products.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} align="center" sx={tableCellStyles}>
-                    No hay productos.
+                  There are no products.
                   </TableCell>
                 </TableRow>
               ) : (

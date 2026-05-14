@@ -68,7 +68,7 @@ export default function MyProfile() {
     Swal.fire({
       icon: "success",
       title: "Updated profile",
-      text: "Tus datos se guardaron correctamente.",
+      text: "Your data was saved successfully.",
       timer: 1500,
       showConfirmButton: false,
       background: "#111111",

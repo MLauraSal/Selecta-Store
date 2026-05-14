@@ -9,7 +9,7 @@ export default function Dashboard () {
   return (
     <section className="min-h-screen bg-gradient-to-b from-primary to-[#1A1A1A] px-4 py-10">
       <div className="max-w-7xl mx-auto">
-        {/* HEADER */}
+       
         <div className="mb-10">
           <p className="text-accent uppercase tracking-[5px] text-xs mb-3">
             Admin Panel
@@ -22,7 +22,7 @@ export default function Dashboard () {
          
         </div>
 
-        {/* TABS */}
+      
         <div className="flex flex-wrap gap-4 mb-8">
           <button
             onClick={() => setTab("products")}
@@ -65,7 +65,7 @@ export default function Dashboard () {
           </button>
         </div>
 
-        {/* CONTENT */}
+      
         <div className="bg-[#181818] border border-[#2A2A2A] rounded-[32px] p-6 lg:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.55)] overflow-hidden">
           {tab === "products" && <ProductTable />}
           {tab === "users" && <UserTable />}

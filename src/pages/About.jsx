@@ -29,7 +29,7 @@ export default function About() {
           </p>
         </div>
 
-        {/* MAIN CARD */}
+        
         <div className="grid lg:grid-cols-2 gap-8 items-center mb-20">
           <div className="bg-[#181818] border border-[#2A2A2A] rounded-[36px] p-8 lg:p-10 shadow-[0_20px_60px_rgba(0,0,0,0.55)]">
             <p className="text-accent uppercase tracking-[4px] text-xs mb-4">
@@ -80,7 +80,7 @@ export default function About() {
           </div>
         </div>
 
-        {/* VALUES */}
+    
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
           {[
             {
@@ -127,7 +127,7 @@ export default function About() {
           })}
         </div>
 
-        {/* CTA */}
+      
         <div className="bg-[#181818] border border-[#2A2A2A] rounded-[36px] p-8 lg:p-12 text-center shadow-[0_20px_60px_rgba(0,0,0,0.55)]">
           <p className="text-accent uppercase tracking-[5px] text-xs mb-3">
             Selecta Store
