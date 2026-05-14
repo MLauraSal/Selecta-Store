@@ -29,9 +29,9 @@ const Login = () => {
     ) {
       fakeUser = {
         username,
-        name: "Administrador",
+        name: "Admin",
         email: "admin@ejemplo.com",
-        profilePic: "/assets/img/user-default.jpg",
+        profilePic: "/img/user-default.jpg",
         role: "admin",
       };
     } else if (username && password === "user1234") {
@@ -39,7 +39,7 @@ const Login = () => {
         username,
         name: username,
         email: username.includes("@") ? username : "",
-        profilePic: "/assets/img/user-default.jpg",
+        profilePic: "/img/user-default.jpg",
         role: "user",
       };
     }
@@ -49,8 +49,8 @@ const Login = () => {
 
       Swal.fire({
         icon: "success",
-        title: "Bienvenido",
-        text: `Hola, ${fakeUser.name}!`,
+        title: "Welcome",
+        text: `Hello, ${fakeUser.name}!`,
         timer: 1200,
         showConfirmButton: false,
         background: "#111111",
@@ -62,8 +62,8 @@ const Login = () => {
     } else {
       Swal.fire({
         icon: "error",
-        title: "Credenciales incorrectas",
-        text: "Por favor verifica tu usuario y contraseña.",
+        title: "Incorrect credentials",
+        text: "Please verify your username and password.",
         background: "#111111",
         color: "#FFFFFF",
         confirmButtonColor: "#C8A96A",

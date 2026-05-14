@@ -2,7 +2,7 @@
 
 const API_BASE = "/data/products.json";
 
-// Obtener productos (Solo lectura inicial)
+// Obtener productos 
 export const getAllProducts = async () => {
   try {
     const res = await fetch(API_BASE);
@@ -10,16 +10,16 @@ export const getAllProducts = async () => {
     return await res.json();
   } catch (error) {
     console.error("Error al leer JSON:", error);
-    return []; // Retornar vacío si falla
+    return []; 
   }
 };
 
-// Simulación: Crear producto (Devuelve el objeto listo para usar)
+// Simulación: Crear producto 
 export const createProduct = async (data) => {
-  // Simulamos un retraso de red (opcional, para realismo)
+  
   await new Promise((resolve) => setTimeout(resolve, 500)); 
   const newProduct = {
-    id: Date.now(), // Generamos un ID único temporal
+    id: Date.now(), 
     ...data,
   };
   return newProduct;
