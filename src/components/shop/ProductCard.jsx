@@ -4,8 +4,10 @@ import { motion } from "framer-motion";
 
 import { useCart } from "../../hooks/useCart";
 import { useFlyToCart } from "../../hooks/useFlyToCart";
+import { useFavorites } from "../../hooks/useFavorites";
 
 import { BsSuitHeartFill } from "react-icons/bs";
+import { BsSuitHeart } from "react-icons/bs";
 import { HiOutlineEye } from "react-icons/hi";
 import { FaShoppingCart } from "react-icons/fa";
 import { IoStar, IoStarOutline } from "react-icons/io5";
@@ -14,6 +16,9 @@ export default function ProductCard({ product, index = 0 }) {
   const { addToCart } = useCart();
   const { animateToCart } = useFlyToCart();
   const imageRef = useRef(null);
+
+  const { toggleFavorite, isFavorite } = useFavorites();
+  const favorite = isFavorite(product.id);
 
   const productImage = Array.isArray(product.image)
     ? product.image[0]
@@ -54,9 +59,30 @@ export default function ProductCard({ product, index = 0 }) {
         </div>
 
         <div className="absolute right-3 top-3 flex flex-col gap-3 translate-x-20 group-hover:translate-x-0 transition-all duration-500">
-          <button className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-black/70 backdrop-blur-lg text-text flex justify-center items-center border border-[#2A2A2A] hover:bg-accent hover:text-primary transition">
-            <BsSuitHeartFill size={15} />
-          </button>
+        <button
+  onClick={(e) => {
+    e.stopPropagation();
+    toggleFavorite(product);
+  }}
+  className={`
+    w-10 h-10 sm:w-11 sm:h-11 rounded-full
+    bg-black/70 backdrop-blur-lg
+    flex justify-center items-center
+    border border-[#2A2A2A]
+    transition
+    ${
+      favorite
+        ? "text-accent border-accent"
+        : "text-text hover:bg-accent hover:text-primary"
+    }
+  `}
+>
+  {favorite ? (
+    <BsSuitHeartFill size={15} />
+  ) : (
+    <BsSuitHeart size={15} />
+  )}
+</button>
 
           <Link
             to={`/products/${product.id}`}

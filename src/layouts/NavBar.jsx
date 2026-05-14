@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { useState, useContext } from "react";
-
+import { useFavorites } from "../hooks/useFavorites";
 import { useCart } from "../hooks/useCart.js";
 import AuthContext from "../contexts/AuthContext.jsx";
 
@@ -28,6 +28,7 @@ export default function NavBar({ toggleCart }) {
   const { cartItems } = useCart();
   const { user, logout } = useContext(AuthContext);
   const [openMobile, setOpenMobile] = useState(false);
+  const { favorites } = useFavorites();
 
   const location = useLocation();
   const params = new URLSearchParams(location.search);
@@ -224,21 +225,23 @@ export default function NavBar({ toggleCart }) {
               </StyledBadge>
             </IconButton>
 
-            <IconButton aria-label="heart">
-              <StyledBadge
-                badgeContent={0}
-                showZero
-                sx={{
-                  "& .MuiBadge-badge": {
-                    backgroundColor: "#C8A96A",
-                    color: "#111",
-                    fontWeight: "bold",
-                  },
-                }}
-              >
-                <FaRegHeart className="w-5 h-5 text-white hover:text-accent transition" />
-              </StyledBadge>
-            </IconButton>
+           <Link to="/favorites">
+  <IconButton aria-label="heart">
+    <StyledBadge
+      badgeContent={favorites?.length || 0}
+      showZero
+      sx={{
+        "& .MuiBadge-badge": {
+          backgroundColor: "#C8A96A",
+          color: "#111",
+          fontWeight: "bold",
+        },
+      }}
+    >
+      <FaRegHeart className="w-5 h-5 text-white hover:text-accent transition" />
+    </StyledBadge>
+  </IconButton>
+</Link>
 
             {user ? (
               <AccountMenu user={user} logout={logout} />

@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useState } from "react";
 import { useContext, useEffect } from "react";
@@ -23,6 +24,7 @@ import Blog from "./pages/Blog.jsx";
 import About from "./pages/About.jsx";
 import MyProfile from "./pages/MyProfile.jsx";
 import Dashboard from "./pages/DashBoard.jsx";
+import Favorites from "./pages/Favorites";
 
 
 function App() {
@@ -62,6 +64,11 @@ useEffect(() => {
               <UserProtectedRoute>
                 <MyProfile />
               </UserProtectedRoute>} />
+
+              <Route path="/favorites" element={
+                <UserProtectedRoute>
+                <Favorites />
+                </UserProtectedRoute>} />
 
           </Route>
           <Route path="/login" element={<Login/>} />
