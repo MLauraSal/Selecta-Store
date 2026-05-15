@@ -1,4 +1,4 @@
-[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&size=26&pause=1000&color=C8A96A&width=460&height=60&lines=Selecta+Store+Ecommers;Proyecto+creado+con+React+js+;%2B+Vite)](https://git.io/typing-svg)
+[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=28&pause=1000&color=C8A96A&width=490&height=80&lines=Selecta+Store+Ecommers;Proyecto+creado+con+React+js+;%2B+Vite)](https://git.io/typing-svg)
 
 # Proyecto de eCommerce  (React-Vite)
 
