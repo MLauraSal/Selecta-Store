@@ -1,4 +1,4 @@
-import ProductContext from "../contexts/AuthContext"
+import ProductContext from "../contexts/ProductsContext.jsx"
 import { useContext } from "react";
 
 export const useProducts = () => useContext(ProductContext);
