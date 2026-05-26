@@ -26,7 +26,7 @@ export default function DashboardSidebar () {
     `;
 
   return (
-    <aside className="w-72 bg-[#111111] border-r border-[#2A2A2A] min-h-screen p-6 hidden lg:block">
+    <aside className="w-72 bg-[#111111] border-r border-[#2A2A2A] min-h-screen p-6 hidden ">
       
       <div className="mb-10">
         <p className="text-accent uppercase tracking-[5px] text-xs mb-3">
