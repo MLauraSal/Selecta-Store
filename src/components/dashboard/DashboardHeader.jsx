@@ -10,7 +10,10 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import AuthContext from "../../contexts/AuthContext";
 
-export default function DashboardHeader() {
+export default function DashboardHeader({
+  sidebarOpen,
+  setSidebarOpen,
+}) {
   const { user } = useContext(AuthContext);
 
   const displayName = user?.name || user?.username || "Administrator";
@@ -27,15 +30,17 @@ export default function DashboardHeader() {
     >
       <Toolbar className="flex justify-between min-h-[80px]">
         <div className="flex items-center gap-3">
-          <IconButton
-            edge="start"
-            sx={{
-              color: "#FFFFFF",
-              display: { lg: "none" },
-            }}
-          >
-            <MenuIcon />
-          </IconButton>
+        <IconButton
+  edge="start"
+  onClick={() =>
+    setSidebarOpen(!sidebarOpen)
+  }
+  sx={{
+    color: "#FFFFFF",
+  }}
+>
+  <MenuIcon />
+</IconButton>
 
           <div>
             <p className="text-accent uppercase tracking-[4px] text-[10px]">

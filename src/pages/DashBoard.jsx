@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-
+import DashboardSidebar from "../components/dashboard/DashboardSidebar";
 import ProductTable from "../components/dashboard/ProductTable";
 import UserTable from "../components/dashboard/UserTable";
 
@@ -13,13 +13,19 @@ import { useProducts } from "../hooks/useProducts";
 export default function Dashboard() {
   const [tab, setTab] = useState("products");
   const { products = [] } = useProducts();
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
     <section className="min-h-screen bg-gradient-to-b from-primary to-[#1A1A1A] flex">
-     
-
+     <DashboardSidebar
+  sidebarOpen={sidebarOpen}
+  setSidebarOpen={setSidebarOpen}
+/>
       <div className="flex-1 flex flex-col min-w-0">
-        <DashboardHeader />
+      <DashboardHeader
+  sidebarOpen={sidebarOpen}
+  setSidebarOpen={setSidebarOpen}
+/>
 
         <main className="flex-1 p-4 sm:p-6 lg:p-10">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 mb-10">
