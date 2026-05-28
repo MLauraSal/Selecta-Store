@@ -11,6 +11,8 @@ import {
   import { db } from "../config/firebaseConfig.js";
   
   const productsCollection = collection(db, "products");
+
+  //Obtener todos los productos
   
   export const getAllProducts = async () => {
     try {
@@ -20,7 +22,7 @@ import {
       console.error("Error getting products:", error);
     }
   };
-  
+  //Obtener un producto por ID
   export const getProductById = async (id) => {
     try {
       const productRef = doc(productsCollection, id);
@@ -33,7 +35,7 @@ import {
       
     }
   };
-  
+  //Crear un nuevo producto
   export const createProduct = async (data) => {
     try {
       const productRef = await addDoc(productsCollection, data);
@@ -43,6 +45,8 @@ import {
       
      }
   };
+
+  //Actualizar un producto por ID
   
   export const updateProduct = async (id, data) => {
     try {
@@ -59,9 +63,11 @@ import {
       
      }
   };
-  
+  //Eliminar un producto por ID
   export const deleteProduct = async (id) => {
     try {
+
+      // Verificar si el producto existe antes de eliminarlo
       const productRef = doc(productsCollection, id);
       const snapshot = await getDoc(productRef);
       if (!snapshot.exists()) return null;

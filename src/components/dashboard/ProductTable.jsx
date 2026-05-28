@@ -26,8 +26,8 @@ export default function ProductTable() {
   const {
     products = [],
     addProduct,
-    updateProduct,
-    deleteProduct,
+    editProduct,
+    removeProduct,
     loading,
   } = useProducts();
 
@@ -46,17 +46,17 @@ export default function ProductTable() {
 
   const handleDelete = (id) => {
     if (confirm("Are you sure you want to delete this product?")) {
-      deleteProduct(id);
+      removeProduct(id);
     }
   };
 
-  const handleSave = (productData) => {
+  const handleSave = async (productData) => {
     if (selectedProduct) {
-      updateProduct(selectedProduct.id, productData);
+      await editProduct(selectedProduct.id, productData);
     } else {
-      addProduct(productData);
+      await addProduct(productData);
     }
-
+  
     setModalOpen(false);
   };
 
@@ -120,6 +120,7 @@ export default function ProductTable() {
                 "Price",
                 "Stock",
                 "Category",
+                "Subcategory",
                 "Description",
                 "Actions",
               ].map((head) => (
@@ -150,7 +151,7 @@ export default function ProductTable() {
               </TableRow>
             ) : products.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} align="center" sx={tableCellStyles}>
+                <TableCell colSpan={8} align="center" sx={tableCellStyles}>
                   There are no products.
                 </TableCell>
               </TableRow>
@@ -201,6 +202,12 @@ export default function ProductTable() {
                   <TableCell sx={tableCellStyles}>
                     {getCategory(product.category)}
                   </TableCell>
+
+                  <TableCell sx={tableCellStyles}>
+  <span className="bg-white/5 text-gray-300 border border-[#2A2A2A] px-3 py-1 rounded-full text-xs font-bold">
+    {product.subcategory || "No subcategory"}
+  </span>
+</TableCell>
 
                   <TableCell sx={tableCellStyles}>
                     <p className="text-gray-400 max-w-[260px] line-clamp-2">

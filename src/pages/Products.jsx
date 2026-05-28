@@ -1,46 +1,48 @@
-import { useEffect, useState } from "react";
+import useProducts from "../hooks/useProducts";
 import { useSearchParams, Link } from "react-router-dom";
 import ProductsGrid from "../components/shop/ProductsGrid";
 
+const slugify = (text = "") =>
+  String(text)
+    .toLowerCase()
+    .trim()
+    .replaceAll(" ", "-");
+
 export default function Products() {
-  const [products, setProducts] = useState([]);
-  const [charging, setCharging] = useState(true);
-  const [error, setError] = useState(null);
+  const { products = [], loading } = useProducts();
 
   const [searchParams] = useSearchParams();
   const selectedCategory = searchParams.get("category");
+  const selectedSubcategory = searchParams.get("subcategory");
 
-  useEffect(() => {
-    fetch("/data/products.json")
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("Error al cargar productos");
-        }
-        return res.json();
-      })
-      .then((data) => setProducts(data))
-      .catch((err) => setError(err.message))
-      .finally(() => setCharging(false));
-  }, []);
+  const getCategorySlug = (product) => {
+    if (typeof product.category === "object") {
+      return product.category?.slug || slugify(product.category?.name);
+    }
 
-  const filteredProducts = selectedCategory
-    ? products.filter(
-        (product) => product.category?.slug === selectedCategory
-      )
-    : products;
+    return slugify(product.category);
+  };
 
-  if (charging) {
+  const getSubcategorySlug = (product) => {
+    return slugify(product.subcategory);
+  };
+
+  const filteredProducts = products.filter((product) => {
+    const matchCategory = selectedCategory
+      ? getCategorySlug(product) === selectedCategory
+      : true;
+
+    const matchSubcategory = selectedSubcategory
+      ? getSubcategorySlug(product) === selectedSubcategory
+      : true;
+
+    return matchCategory && matchSubcategory;
+  });
+
+  if (loading) {
     return (
       <div className="min-h-screen flex justify-center items-center bg-primary">
         <div className="w-14 h-14 border-4 border-accent/30 border-t-accent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="h-screen flex justify-center items-center bg-primary">
-        <p className="text-red-400 text-lg">{error}</p>
       </div>
     );
   }
@@ -54,14 +56,13 @@ export default function Products() {
           </span>
 
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-text">
-            {selectedCategory ? "Productos filtrados" : "Trending Products"}
+            {selectedCategory || selectedSubcategory
+              ? "Filtered Products"
+              : "Trending Products"}
           </h2>
 
-          {selectedCategory && (
-            <Link
-              to="/products"
-              className="mt-4 text-accent hover:underline"
-            >
+          {(selectedCategory || selectedSubcategory) && (
+            <Link to="/products" className="mt-4 text-accent hover:underline">
               View all products
             </Link>
           )}
@@ -73,7 +74,7 @@ export default function Products() {
           <ProductsGrid products={filteredProducts} />
         ) : (
           <div className="text-center text-gray-400 py-20">
-          There are no products in this category.
+            There are no products in this category.
           </div>
         )}
       </div>

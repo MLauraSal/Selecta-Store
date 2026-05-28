@@ -5,7 +5,6 @@ import {
   DialogActions,
   TextField,
   Button,
-  MenuItem,
 } from "@mui/material";
 
 import { useState, useEffect } from "react";
@@ -33,7 +32,7 @@ const inputStyles = {
   },
 };
 
-export default function UserFormModal({
+export default function CategoryFormModal({
   open,
   onClose,
   onSave,
@@ -41,31 +40,27 @@ export default function UserFormModal({
 }) {
   const [formData, setFormData] = useState({
     name: "",
-    username: "",
-    email: "",
-    role: "user",
-    profilePic: "",
+    image: "",
+    subcategory: "",
   });
 
   useEffect(() => {
     if (initialData) {
       setFormData({
         name: initialData.name || "",
-        username: initialData.username || "",
-        email: initialData.email || "",
-        role: initialData.role || "user",
-        profilePic: initialData.profilePic || "",
+        image: initialData.image || "",
+        subcategory: Array.isArray(initialData.subcategory)
+          ? initialData.subcategory.join(", ")
+          : initialData.subcategory || "",
       });
     } else {
       setFormData({
         name: "",
-        username: "",
-        email: "",
-        role: "user",
-        profilePic: "",
+        image: "",
+        subcategory: "",
       });
     }
-  }, [initialData, open]);
+  }, [initialData]);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -75,9 +70,18 @@ export default function UserFormModal({
   };
 
   const handleSubmit = () => {
-    if (!formData.name || !formData.email) return;
+    if (!formData.name) return;
 
-    onSave(formData);
+    onSave({
+      name: formData.name,
+      image: formData.image,
+      subcategory: formData.subcategory
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean),
+    });
+
+    onClose();
   };
 
   return (
@@ -93,16 +97,17 @@ export default function UserFormModal({
           borderRadius: "28px",
           border: "1px solid #2A2A2A",
           boxShadow: "0 20px 60px rgba(0,0,0,0.65)",
+          overflow: "hidden",
         },
       }}
     >
       <DialogTitle sx={{ borderBottom: "1px solid #2A2A2A", px: 4, py: 3 }}>
-        <p className="text-accent uppercase tracking-[5px] text-xs mb-2">
-          User
+        <p className="text-accent uppercase tracking-[5px] text-xs mb-4">
+          Category
         </p>
 
         <h2 className="text-2xl font-black text-text">
-          {initialData ? "Edit user" : "New user"}
+          {initialData ? "Edit category" : "New category"}
         </h2>
       </DialogTitle>
 
@@ -110,6 +115,7 @@ export default function UserFormModal({
         sx={{
           px: 4,
           py: 4,
+          mt: 2,
           display: "flex",
           flexDirection: "column",
           gap: 2.5,
@@ -125,53 +131,34 @@ export default function UserFormModal({
         />
 
         <TextField
-          label="Username"
-          name="username"
-          value={formData.username}
+          label="Image URL"
+          name="image"
+          value={formData.image}
           onChange={handleChange}
           fullWidth
           sx={inputStyles}
         />
 
-        <TextField
-          label="Email"
-          name="email"
-          type="email"
-          value={formData.email}
-          onChange={handleChange}
-          fullWidth
-          sx={inputStyles}
-        />
-
-        <TextField
-          select
-          label="Role"
-          name="role"
-          value={formData.role}
-          onChange={handleChange}
-          fullWidth
-          sx={inputStyles}
-        >
-          <MenuItem value="user">User</MenuItem>
-          <MenuItem value="admin">Admin</MenuItem>
-        </TextField>
-
-        <TextField
-          label="Profile image URL"
-          name="profilePic"
-          value={formData.profilePic}
-          onChange={handleChange}
-          fullWidth
-          sx={inputStyles}
-        />
-
-        {formData.profilePic && (
-          <img
-            src={formData.profilePic}
-            alt={formData.name}
-            className="w-24 h-24 rounded-full object-cover border-2 border-accent mx-auto"
-          />
+        {formData.image && (
+          <div className="rounded-2xl overflow-hidden border border-[#2A2A2A] bg-primary">
+            <img
+              src={formData.image}
+              alt={formData.name}
+              className="w-full h-48 object-cover"
+            />
+          </div>
         )}
+
+        <TextField
+          label="Subcategories separated by commas"
+          name="subcategory"
+          value={formData.subcategory}
+          onChange={handleChange}
+          fullWidth
+          multiline
+          rows={3}
+          sx={inputStyles}
+        />
       </DialogContent>
 
       <DialogActions sx={{ borderTop: "1px solid #2A2A2A", px: 4, py: 3 }}>

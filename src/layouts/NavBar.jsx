@@ -1,8 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { useFavorites } from "../hooks/useFavorites";
 import { useCart } from "../hooks/useCart.js";
 import AuthContext from "../contexts/AuthContext.jsx";
+import { getAllCategories } from "../services/categoryService.js";
 
 import MobileMenu from "../components/header/MobileMenu.jsx";
 import AccountMenu from "../components/header/AccountMenu.jsx";
@@ -24,29 +25,34 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
   },
 }));
 
+const slugify = (text) =>
+  text.toLowerCase().trim().replaceAll(" ", "-");
+
 export default function NavBar({ toggleCart }) {
   const { cartItems } = useCart();
   const { user, logout } = useContext(AuthContext);
-  const [openMobile, setOpenMobile] = useState(false);
   const { favorites } = useFavorites();
+
+  const [openMobile, setOpenMobile] = useState(false);
+  const [categories, setCategories] = useState([]);
 
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const selectedCategory = params.get("category");
+  const selectedSubcategory = params.get("subcategory");
+
+  useEffect(() => {
+    getAllCategories()
+      .then(setCategories)
+      .catch((error) => console.error("Error loading categories:", error));
+  }, []);
 
   const isActive = (path) => location.pathname === path;
 
   const navClass = (active) =>
     `
-      relative
-      inline-flex
-      items-center
-      h-10
-      px-2
-      transition
-      duration-300
-      hover:text-accent
-      whitespace-nowrap
+      relative inline-flex items-center h-10 px-2 transition duration-300
+      hover:text-accent whitespace-nowrap
       ${
         active
           ? "text-accent after:absolute after:left-0 after:bottom-0 after:w-full after:h-[2px] after:bg-accent"
@@ -65,7 +71,7 @@ export default function NavBar({ toggleCart }) {
             <Bars3Icon className="w-6 h-6" />
           </button>
 
-          <div className="col-1 w-full px-6 items-center justify-center hidden md:flex">
+          <div className="w-full px-6 items-center justify-center hidden md:flex">
             <ul className="flex items-center gap-4 text-[16px] text-text">
               <li>
                 <Link to="/" className={navClass(isActive("/"))}>
@@ -77,91 +83,46 @@ export default function NavBar({ toggleCart }) {
                 <Link
                   to="/products"
                   className={navClass(
-                    location.pathname === "/products" && selectedCategory
+                    location.pathname === "/products" &&
+                      (selectedCategory || selectedSubcategory)
                   )}
                 >
                   Categories
                 </Link>
 
-                <div className="absolute left-[200%] -translate-x-1/2 top-full mt-6 bg-primary shadow-[0_20px_60px_rgba(0,0,0,0.55)] border border-[#2A2A2A] rounded-[28px] p-6 grid grid-cols-3 gap-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-20 min-w-[700px]">
-                  <ul className="space-y-2">
-                    <li className="font-bold border-b border-accent mb-4 pb-2 text-accent uppercase tracking-[2px] text-xs">
-                      Clothes
-                    </li>
+                <div className="absolute left-1/2 -translate-x-1/4 top-full mt-6 bg-primary shadow-[0_20px_60px_rgba(0,0,0,0.55)] border border-[#2A2A2A] rounded-[28px] p-6 grid grid-cols-3 gap-8 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 min-w-[850px]">
+                  {categories.map((category) => (
+                    <div key={category.id} className="space-y-2">
+                      <Link
+                        to={`/products?category=${slugify(category.name)}`}
+                        className="block font-bold border-b border-accent mb-4 pb-2 text-accent uppercase tracking-[2px] text-xs hover:text-text transition"
+                      >
+                        {category.name}
+                      </Link>
 
-                    {["Clothes", "Accessories", "Shoes"].map(
-                      (item) => (
-                        <li key={item}>
-                          <Link
-                            to={`/products?category=${item.toLowerCase()}`}
-                            className="text-gray-400 hover:text-accent transition"
-                          >
-                            {item}
-                          </Link>
-                        </li>
-                      )
-                    )}
-
-                    <li className="mt-4">
-                      <img
-                        src="/img/stocksnap-dress-2583113_1920.jpg"
-                        alt="Clothes"
-                        className="w-full h-[170px] object-cover rounded-2xl border border-[#2A2A2A]"
-                      />
-                    </li>
-                  </ul>
-
-                  <ul className="space-y-2">
-                    <li className="font-bold border-b border-accent mb-4 pb-2 text-accent uppercase tracking-[2px] text-xs">
-                      Furniture
-                    </li>
-
-                    {["Living", "Bedroom", "Kitchen", "Bathroom"].map((item) => (
-                      <li key={item}>
+                      {category.subcategory?.map((sub) => (
                         <Link
-                          to={`/products?category=${item.toLowerCase()}`}
-                          className="text-gray-400 hover:text-accent transition"
+                          key={sub}
+                          to={`/products?category=${slugify(
+                            category.name
+                          )}&subcategory=${slugify(sub)}`}
+                          className="block text-gray-400 hover:text-accent transition"
                         >
-                          {item}
+                          {sub}
                         </Link>
-                      </li>
-                    ))}
+                      ))}
 
-                    <li className="mt-4">
-                      <img
-                        src="/img/monoar_cgi_artist-room-1336497_1920.jpg"
-                        alt="Furniture"
-                        className="w-full h-[170px] object-cover rounded-2xl border border-[#2A2A2A]"
-                      />
-                    </li>
-                  </ul>
-
-                  <ul className="space-y-2">
-                    <li className="font-bold border-b border-accent mb-4 pb-2 text-accent uppercase tracking-[2px] text-xs">
-                      Technology
-                    </li>
-
-                    {["Notebooks", "Tv", "Phones", "Headphones", "Tablets"].map(
-                      (item) => (
-                        <li key={item}>
-                          <Link
-                            to={`/products?category=${item.toLowerCase()}`}
-                            className="text-gray-400 hover:text-accent transition"
-                          >
-                            {item}
-                          </Link>
-                        </li>
-                      )
-                    )}
-
-                    <li className="mt-6">
-                      <img
-                        src="/img/banners/joshuaworoniecki-laptop-5673901.jpg"
-                        alt="Technology"
-                        className="w-full h-[170px] object-cover rounded-2xl border border-[#2A2A2A]"
-                      />
-                    </li>
-                  </ul>
+                      {category.image && (
+                        <Link to={`/products?category=${slugify(category.name)}`}>
+                          <img
+                            src={category.image}
+                            alt={category.name}
+                            className="mt-4 w-full h-[170px] object-cover rounded-2xl border border-[#2A2A2A]"
+                          />
+                        </Link>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </li>
 
@@ -169,7 +130,9 @@ export default function NavBar({ toggleCart }) {
                 <Link
                   to="/products"
                   className={navClass(
-                    location.pathname === "/products" && !selectedCategory
+                    location.pathname === "/products" &&
+                      !selectedCategory &&
+                      !selectedSubcategory
                   )}
                 >
                   Shopping
@@ -201,7 +164,10 @@ export default function NavBar({ toggleCart }) {
               </li>
 
               <li>
-                <Link to="/checkout" className={navClass(isActive("/checkout"))}>
+                <Link
+                  to="/checkout"
+                  className={navClass(isActive("/checkout"))}
+                >
                   Checkout
                 </Link>
               </li>
@@ -225,23 +191,23 @@ export default function NavBar({ toggleCart }) {
               </StyledBadge>
             </IconButton>
 
-           <Link to="/favorites">
-  <IconButton aria-label="heart">
-    <StyledBadge
-      badgeContent={favorites?.length || 0}
-      showZero
-      sx={{
-        "& .MuiBadge-badge": {
-          backgroundColor: "#C8A96A",
-          color: "#111",
-          fontWeight: "bold",
-        },
-      }}
-    >
-      <FaRegHeart className="w-5 h-5 text-white hover:text-accent transition" />
-    </StyledBadge>
-  </IconButton>
-</Link>
+            <Link to="/favorites">
+              <IconButton aria-label="heart">
+                <StyledBadge
+                  badgeContent={favorites?.length || 0}
+                  showZero
+                  sx={{
+                    "& .MuiBadge-badge": {
+                      backgroundColor: "#C8A96A",
+                      color: "#111",
+                      fontWeight: "bold",
+                    },
+                  }}
+                >
+                  <FaRegHeart className="w-5 h-5 text-white hover:text-accent transition" />
+                </StyledBadge>
+              </IconButton>
+            </Link>
 
             {user ? (
               <AccountMenu user={user} logout={logout} />
@@ -250,7 +216,7 @@ export default function NavBar({ toggleCart }) {
                 to="/login"
                 className="ml-2 w-10 h-10 rounded-full border border-[#2A2A2A] bg-[#181818] flex items-center justify-center text-white hover:text-primary hover:bg-accent hover:border-accent transition-all duration-300"
               >
-                <svg
+                  <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"

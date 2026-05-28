@@ -9,61 +9,39 @@ const Login = () => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    username: "",
+    email: "",
     password: "",
   });
 
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.id]: e.target.value });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const { username, password } = formData;
-
-    let fakeUser = null;
-
-    if (
-      (username.toLowerCase() === "admin@ejemplo.com" || username === "admin") &&
-      password === "admin1234"
-    ) {
-      fakeUser = {
-        username,
-        name: "Admin",
-        email: "admin@ejemplo.com",
-        profilePic: "/img/user-default.jpg",
-        role: "admin",
-      };
-    } else if (username && password === "user1234") {
-      fakeUser = {
-        username,
-        name: username,
-        email: username.includes("@") ? username : "",
-        profilePic: "/img/user-default.jpg",
-        role: "user",
-      };
-    }
-
-    if (fakeUser) {
-      login(fakeUser);
+    try {
+      const loggedUser = await login({
+        email: formData.email,
+        password: formData.password,
+      });
 
       Swal.fire({
         icon: "success",
         title: "Welcome",
-        text: `Hello, ${fakeUser.name}!`,
+        text: `Hello, ${loggedUser.name || loggedUser.email}!`,
         timer: 1200,
         showConfirmButton: false,
         background: "#111111",
         color: "#FFFFFF",
         confirmButtonColor: "#C8A96A",
       }).then(() => {
-        navigate(fakeUser.role === "admin" ? "/dashboard" : "/");
+        navigate(loggedUser.role === "admin" ? "/dashboard" : "/");
       });
-    } else {
+    } catch {
       Swal.fire({
         icon: "error",
         title: "Incorrect credentials",
-        text: "Please verify your username and password.",
+        text: "Please verify your email and password.",
         background: "#111111",
         color: "#FFFFFF",
         confirmButtonColor: "#C8A96A",
@@ -80,13 +58,13 @@ const Login = () => {
           </p>
 
           <h1 className="text-4xl font-black text-text">
-          Login to Selecta Store
+            Login to Selecta Store
           </h1>
 
           <p className="text-sm mt-4 text-gray-400">
-          Don't you have an account?{" "}
+            Don't you have an account?{" "}
             <Link to="/register" className="text-accent hover:underline">
-            Register
+              Register
             </Link>
           </p>
         </div>
@@ -103,11 +81,11 @@ const Login = () => {
               </span>
 
               <input
-                type="text"
-                id="username"
-                value={formData.username}
+                type="email"
+                id="email"
+                value={formData.email}
                 onChange={handleChange}
-                placeholder="username "
+                placeholder="email@example.com"
                 required
                 className="w-full pl-12 pr-4 py-3 bg-primary border border-[#2A2A2A] rounded-2xl text-text placeholder:text-gray-500 focus:outline-none focus:border-accent transition"
               />
@@ -143,7 +121,7 @@ const Login = () => {
             </label>
 
             <Link to="#" className="text-accent hover:underline">
-            Forgot your password?
+              Forgot your password?
             </Link>
           </div>
 
@@ -151,11 +129,11 @@ const Login = () => {
             type="submit"
             className="w-full bg-accent text-primary font-bold py-3 rounded-2xl hover:shadow-[0_0_30px_rgba(200,169,106,0.35)] hover:scale-[1.02] transition-all"
           >
-           Login
+            Login
           </button>
         </form>
 
-      
+
       </div>
     </section>
   );

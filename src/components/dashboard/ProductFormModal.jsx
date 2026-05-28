@@ -9,8 +9,6 @@ import {
 
 import { useState, useEffect } from "react";
 
-
-
 const inputStyles = {
   "& .MuiInputBase-root": {
     backgroundColor: "#111111",
@@ -34,58 +32,128 @@ const inputStyles = {
   },
 };
 
-export default function ProductFormModal  ({ open, onClose, onSave, initialData }) {
+export default function ProductFormModal({
+  open,
+  onClose,
+  onSave,
+  initialData,
+}) {
   const [formData, setFormData] = useState({
     name: "",
     price: "",
     stock: "",
-    image: "",
+    images: [],
+    imageUrlsText: "",
     description: "",
     category: "",
+    subcategory: "",
   });
+
+  const [previewImages, setPreviewImages] = useState([]);
 
   useEffect(() => {
     if (initialData) {
+      const images = initialData.images || initialData.image || [];
+      const imagesArray = Array.isArray(images) ? images : [images].filter(Boolean);
+
       setFormData({
-        ...initialData,
-        image: Array.isArray(initialData.image)
-          ? initialData.image[0]
-          : initialData.image || "",
+        name: initialData.name || "",
+        price: initialData.price || "",
+        stock: initialData.stock || "",
+        images: imagesArray,
+        imageUrlsText: imagesArray.join("\n"),
         description: initialData.description || "",
         category:
           typeof initialData.category === "object"
             ? initialData.category?.name || ""
             : initialData.category || "",
+        subcategory: initialData.subcategory || "",
       });
+
+      setPreviewImages(imagesArray);
     } else {
       setFormData({
         name: "",
         price: "",
         stock: "",
-        image: "",
+        images: [],
+        imageUrlsText: "",
         description: "",
         category: "",
+        subcategory: "",
       });
+
+      setPreviewImages([]);
     }
-  }, [initialData]);
+  }, [initialData, open]);
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    if (name === "imageUrlsText") {
+      const urls = value
+        .split("\n")
+        .map((url) => url.trim())
+        .filter(Boolean);
+
+      setFormData((prev) => ({
+        ...prev,
+        imageUrlsText: value,
+        images: urls,
+      }));
+
+      setPreviewImages(urls);
+      return;
+    }
+
     setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [name]: value,
+    }));
+  };
+
+  const handleFilesChange = (e) => {
+    const files = Array.from(e.target.files || []);
+    const localPreviews = files.map((file) => URL.createObjectURL(file));
+
+    const updatedImages = [...formData.images, ...localPreviews];
+
+    setPreviewImages(updatedImages);
+
+    setFormData((prev) => ({
+      ...prev,
+      images: updatedImages,
+      imageUrlsText: updatedImages.join("\n"),
+    }));
+  };
+
+  const handleRemoveImage = (imageToRemove) => {
+    const updatedImages = previewImages.filter((img) => img !== imageToRemove);
+
+    setPreviewImages(updatedImages);
+
+    setFormData((prev) => ({
+      ...prev,
+      images: updatedImages,
+      imageUrlsText: updatedImages.join("\n"),
     }));
   };
 
   const handleSubmit = () => {
-    if (formData.name && formData.price && formData.stock) {
-      onSave({
-        ...formData,
-        price: parseFloat(formData.price),
-        stock: parseInt(formData.stock),
-      });
+    if (!formData.name || !formData.price || !formData.stock) return;
 
-      onClose();
-    }
+    onSave({
+      name: formData.name,
+      price: parseFloat(formData.price),
+      stock: parseInt(formData.stock),
+      images: formData.images,
+      image: formData.images,
+      description: formData.description,
+      category: formData.category,
+      subcategory: formData.subcategory,
+    });
+
+    onClose();
   };
 
   return (
@@ -112,7 +180,7 @@ export default function ProductFormModal  ({ open, onClose, onSave, initialData 
           py: 3,
         }}
       >
-        <p className="text-accent uppercase tracking-[5px] text-xs mb-2">
+        <p className="text-accent uppercase tracking-[5px] text-xs mb-4">
           Product
         </p>
 
@@ -125,6 +193,7 @@ export default function ProductFormModal  ({ open, onClose, onSave, initialData 
         sx={{
           px: 4,
           py: 4,
+          mt: 2,
           display: "flex",
           flexDirection: "column",
           gap: 2.5,
@@ -161,22 +230,53 @@ export default function ProductFormModal  ({ open, onClose, onSave, initialData 
           />
         </div>
 
+        <div>
+          <label className="block text-sm text-gray-300 mb-2">
+            Upload product images
+          </label>
+
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleFilesChange}
+            className="block w-full text-sm text-gray-400 file:mr-4 file:py-3 file:px-5 file:rounded-2xl file:border-0 file:text-sm file:font-bold file:bg-accent file:text-primary hover:file:shadow-[0_0_20px_rgba(200,169,106,0.35)]"
+          />
+        </div>
+
         <TextField
-          label="URL from image"
-          name="image"
-          value={formData.image}
+          label="Image URLs - one per line"
+          name="imageUrlsText"
+          value={formData.imageUrlsText}
           onChange={handleChange}
           fullWidth
+          multiline
+          rows={3}
           sx={inputStyles}
         />
 
-        {formData.image && (
-          <div className="rounded-2xl overflow-hidden border border-[#2A2A2A] bg-primary">
-            <img
-              src={formData.image}
-              alt="preview"
-              className="w-full h-48 object-cover"
-            />
+        {previewImages.length > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {previewImages.map((img, index) => (
+              <div
+                key={index}
+                className="relative rounded-2xl overflow-hidden border border-[#2A2A2A] bg-primary"
+              >
+                <img
+                  src={img}
+                  alt={`preview-${index}`}
+                  className="w-full h-28 object-cover"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => handleRemoveImage(img)}
+                  className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/70 text-white hover:bg-red-500 transition"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
           </div>
         )}
 
@@ -184,6 +284,15 @@ export default function ProductFormModal  ({ open, onClose, onSave, initialData 
           label="Category"
           name="category"
           value={formData.category}
+          onChange={handleChange}
+          fullWidth
+          sx={inputStyles}
+        />
+
+        <TextField
+          label="Subcategory"
+          name="subcategory"
+          value={formData.subcategory}
           onChange={handleChange}
           fullWidth
           sx={inputStyles}
@@ -249,5 +358,4 @@ export default function ProductFormModal  ({ open, onClose, onSave, initialData 
       </DialogActions>
     </Dialog>
   );
-};
-
+}

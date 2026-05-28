@@ -8,6 +8,7 @@ import { HiArrowLeft } from "react-icons/hi";
 
 import { useCart } from "../hooks/useCart";
 import { useFlyToCart } from "../hooks/useFlyToCart";
+import { getProductById } from "../services/productService";
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -23,29 +24,23 @@ export default function ProductDetail() {
   const { animateToCart } = useFlyToCart();
 
   useEffect(() => {
-    fetch("/data/products.json")
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("Error loading product");
-        }
-        return res.json();
-      })
+    getProductById(id)
       .then((data) => {
-        const foundProduct = data.find(
-          (item) => String(item.id) === String(id)
-        );
-
-        if (!foundProduct) {
-          throw new Error("Product not found");
-        }
-
-        setProduct(foundProduct);
-        setSelectedImage(foundProduct.image[0]);
+        const images =
+          data.images ||
+          data.image ||
+          [];
+  
+        const firstImage = Array.isArray(images)
+          ? images[0]
+          : images;
+  
+        setProduct(data);
+        setSelectedImage(firstImage);
       })
       .catch((err) => setError(err.message))
       .finally(() => setCharging(false));
   }, [id]);
-
   const handleAddToCart = () => {
     addToCart(product);
     animateToCart(imageRef.current);
@@ -105,7 +100,7 @@ export default function ProductDetail() {
               />
             </div>
 
-            {product.image?.length > 1 && (
+            {(product.images || product.image)?.length > 1 && (
               <div className="grid grid-cols-4 gap-4">
                 {product.image.map((img, index) => (
                   <button

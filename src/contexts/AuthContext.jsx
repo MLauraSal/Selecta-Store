@@ -1,53 +1,132 @@
-import { createContext, useState } from "react";
+import { createContext, useEffect, useState } from "react";
+import {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut,
+  createUserWithEmailAndPassword,
+  updateProfile,
+} from "firebase/auth";
+
+import { auth } from "../config/firebaseConfig";
+import {
+  createUser,
+  getUserByEmail,
+  updateUser as updateUserService,
+} from "../services/userService";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [admin, setAdmin] = useState(false);
+  const [loadingAuth, setLoadingAuth] = useState(true);
 
-  const login = (userData) => {
-    const token = `fake-token-${userData.username}`;
-    localStorage.setItem("authToken", token);
-    localStorage.setItem("userData", JSON.stringify(userData));
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      try {
+        if (firebaseUser) {
+          const firestoreUser = await getUserByEmail(firebaseUser.email);
 
-    if (userData.role === "admin") {
-      setAdmin(true);
+          const finalUser = firestoreUser || {
+            uid: firebaseUser.uid,
+            name: firebaseUser.displayName || "",
+            username: firebaseUser.displayName || "",
+            email: firebaseUser.email,
+            profilePic: firebaseUser.photoURL || "",
+            role: "user",
+          };
+
+          setUser(finalUser);
+          setAdmin(finalUser.role === "admin");
+          localStorage.setItem("userData", JSON.stringify(finalUser));
+        } else {
+          setUser(null);
+          setAdmin(false);
+          localStorage.removeItem("userData");
+        }
+      } finally {
+        setLoadingAuth(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const login = async ({ email, password }) => {
+    const credential = await signInWithEmailAndPassword(auth, email, password);
+    const firestoreUser = await getUserByEmail(credential.user.email);
+
+    if (!firestoreUser) {
+      throw new Error("User profile not found in Firestore");
     }
 
-    setUser(userData);
+    setUser(firestoreUser);
+    setAdmin(firestoreUser.role === "admin");
+    localStorage.setItem("userData", JSON.stringify(firestoreUser));
+
+    return firestoreUser;
   };
-  const updateUser = (updatedData) => {
-    const newUser = {
-      ...user,
-      ...updatedData,
-    };
-  
+
+  const register = async ({ email, password, name, username, profilePic }) => {
+    const credential = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+
+    await updateProfile(credential.user, {
+      displayName: name,
+      photoURL: profilePic || "",
+    });
+
+    const newUser = await createUser({
+      uid: credential.user.uid,
+      name,
+      username,
+      email,
+      profilePic: profilePic || "",
+      role: "user",
+    });
+
     setUser(newUser);
+    setAdmin(false);
     localStorage.setItem("userData", JSON.stringify(newUser));
+
+    return newUser;
   };
-  const logout = () => {
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("userData");
+
+  const updateUser = async (updatedData) => {
+    if (!user?.id) return;
+
+    const updatedUser = await updateUserService(user.id, updatedData);
+
+    setUser(updatedUser);
+    setAdmin(updatedUser.role === "admin");
+    localStorage.setItem("userData", JSON.stringify(updatedUser));
+  };
+
+  const logout = async () => {
+    await signOut(auth);
     setUser(null);
     setAdmin(false);
+    localStorage.removeItem("userData");
   };
 
-  const verifyLog = () => {
-    const userToken = localStorage.getItem("authToken");
-    const storedUser = localStorage.getItem("userData");
-  
-    if (userToken && storedUser) {
-      const parsedUser = JSON.parse(storedUser);
-      setUser(parsedUser);
-      if (parsedUser.role === "admin") {
-        setAdmin(true);
-      }
-    }
-  };
-  
+  const verifyLog = () => {};
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, admin, verifyLog, updateUser }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        admin,
+        loadingAuth,
+        login,
+        register,
+        logout,
+        verifyLog,
+        updateUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

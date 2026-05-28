@@ -20,9 +20,14 @@ export default function ProductCard({ product, index = 0 }) {
   const { toggleFavorite, isFavorite } = useFavorites();
   const favorite = isFavorite(product.id);
 
-  const productImage = Array.isArray(product.image)
-    ? product.image[0]
-    : product.image || product.images?.[0]?.src || "/img/no-image.png";
+  const productImages =
+  product.images ||
+  product.image ||
+  [];
+
+const productImage = Array.isArray(productImages)
+  ? productImages[0]
+  : productImages || "/img/no-image.png";
 
   const categoryName =
     product.category?.name || product.category || "Product";

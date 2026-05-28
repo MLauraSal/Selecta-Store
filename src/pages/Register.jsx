@@ -4,7 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import Swal from "sweetalert2";
 
 const Register = () => {
-  const { login } = useAuth();
+  const { register } = useAuth();
   const navigate = useNavigate();
 
   const [preview, setPreview] = useState(null);
@@ -32,33 +32,40 @@ const Register = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const profilePicUrl = formData.profilePic
-      ? URL.createObjectURL(formData.profilePic)
-      : "/assets/img/user-default.jpg";
-
-    login({
-      username: formData.username,
-      name: formData.name,
-      email: formData.email,
-      profilePic: profilePicUrl,
-      role: "user",
-    });
-
-    Swal.fire({
-      icon: "success",
-      title: "Successful registration",
-      text: `Welcome, ${formData.name}!`,
-      timer: 1500,
-      showConfirmButton: false,
-      background: "#111111",
-      color: "#FFFFFF",
-      confirmButtonColor: "#C8A96A",
-    });
-
-    navigate("/");
+  
+    try {
+      await register({
+        username: formData.username,
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        profilePic: preview || "/img/user-default.jpg",
+      });
+  
+      Swal.fire({
+        icon: "success",
+        title: "Successful registration",
+        text: `Welcome, ${formData.name}!`,
+        timer: 1500,
+        showConfirmButton: false,
+        background: "#111111",
+        color: "#FFFFFF",
+        confirmButtonColor: "#C8A96A",
+      });
+  
+      navigate("/");
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Registration error",
+        text: error.message,
+        background: "#111111",
+        color: "#FFFFFF",
+        confirmButtonColor: "#C8A96A",
+      });
+    }
   };
 
   return (

@@ -1,24 +1,17 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { getAllCategories } from "../../services/categoryService.js";
+
+const slugify = (text) =>
+  text.toLowerCase().trim().replaceAll(" ", "-");
 
 export default function MobileMenu({ open, onClose }) {
   const [categories, setCategories] = useState([]);
+  const [activeCategory, setActiveCategory] = useState(null);
 
   useEffect(() => {
-    fetch("/data/products.json")
-      .then((res) => res.json())
-      .then((data) => {
-        const uniqueCategories = [
-          ...new Map(
-            data.map((product) => [
-              product.category.slug,
-              product.category,
-            ])
-          ).values(),
-        ];
-
-        setCategories(uniqueCategories);
-      })
+    getAllCategories()
+      .then(setCategories)
       .catch((error) => console.error("Error loading categories:", error));
   }, []);
 
@@ -78,25 +71,59 @@ export default function MobileMenu({ open, onClose }) {
 
         <div>
           <h3 className="text-xs uppercase tracking-[4px] text-accent mb-4">
-          Categories
+            Categories
           </h3>
 
           <ul className="space-y-3">
             {categories.map((category) => (
-              <li key={category.id}>
-                <Link
-                  to={`/products?category=${category.slug}`}
-                  onClick={onClose}
-                  className="flex items-center gap-3 py-3 border-b border-[#2A2A2A] hover:text-accent transition"
+              <li key={category.id} className="border-b border-[#2A2A2A] pb-3">
+                <button
+                  onClick={() =>
+                    setActiveCategory(
+                      activeCategory === category.id ? null : category.id
+                    )
+                  }
+                  className="w-full flex items-center justify-between gap-3 py-2 hover:text-accent transition"
                 >
-                  <img
-                    src={category.image}
-                    alt={category.name}
-                    className="w-10 h-10 rounded-full object-cover border border-[#2A2A2A]"
-                  />
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={category.image}
+                      alt={category.name}
+                      className="w-10 h-10 rounded-full object-cover border border-[#2A2A2A]"
+                    />
 
-                  <span>{category.name}</span>
-                </Link>
+                    <span>{category.name}</span>
+                  </div>
+
+                  <span className="text-accent">
+                    {activeCategory === category.id ? "−" : "+"}
+                  </span>
+                </button>
+
+                {activeCategory === category.id && (
+                  <div className="mt-3 pl-13 space-y-2">
+                    <Link
+                      to={`/products?category=${slugify(category.name)}`}
+                      onClick={onClose}
+                      className="block text-accent text-sm"
+                    >
+                      View all {category.name}
+                    </Link>
+
+                    {category.subcategory?.map((sub) => (
+                      <Link
+                        key={sub}
+                        to={`/products?category=${slugify(
+                          category.name
+                        )}&subcategory=${slugify(sub)}`}
+                        onClick={onClose}
+                        className="block text-gray-400 hover:text-accent text-sm transition"
+                      >
+                        {sub}
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </li>
             ))}
           </ul>

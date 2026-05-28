@@ -2,9 +2,9 @@ import { createContext, useEffect, useState } from "react";
 import { 
   getAllProducts, 
   createProduct, 
-  updateProductApi, 
-  deleteProductApi 
-} from "../services/api";
+  updateProduct, 
+  deleteProduct 
+} from "../services/productService";
 
 const ProductContext = createContext();
 
@@ -13,30 +13,33 @@ export const ProductsProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   
+  const loadProducts = async () => {
+    try {
+      setLoading(true);
+      const data = await getAllProducts();
+      setProducts(data);
+    } catch (error) {
+      console.error("Error loading products:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadData = async () => {
-      const storedProducts = localStorage.getItem("app_products");
-      
-      if (storedProducts) {
-        console.log("Loading from localStorage...");
-        setProducts(JSON.parse(storedProducts));
-      } else {
-        console.log("Loading from JSON...");
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
         const data = await getAllProducts();
         setProducts(data);
+      } catch (error) {
+        console.error("Error loading products:", error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
-    loadData();
+    fetchProducts();
   }, []);
-
-  
-  useEffect(() => {
-    if (!loading && products.length > 0) {
-      localStorage.setItem("app_products", JSON.stringify(products));
-    }
-  }, [products, loading]);
 
   // CREATE
   const addProduct = async (productData) => {
@@ -48,8 +51,8 @@ export const ProductsProvider = ({ children }) => {
   };
 
   // UPDATE
-  const updateProduct = async (id, updatedData) => {
-    await updateProductApi(id, updatedData); 
+  const editProduct = async (id, updatedData) => {
+    await updateProduct(id, updatedData); 
     
     setProducts((prev) =>
       prev.map((product) =>
@@ -59,8 +62,8 @@ export const ProductsProvider = ({ children }) => {
   };
 
   // DELETE
-  const deleteProduct = async (id) => {
-    await deleteProductApi(id); 
+  const removeProduct = async (id) => {
+    await deleteProduct(id); 
     
     setProducts((prev) =>
       prev.filter((product) => product.id !== id)
@@ -71,10 +74,12 @@ export const ProductsProvider = ({ children }) => {
 
   return (
     <ProductContext.Provider value={{ 
-      products, 
+      products,
+      loading, 
       addProduct, 
-      updateProduct, 
-      deleteProduct 
+      editProduct, 
+      removeProduct,
+      refreshProducts: loadProducts,
     }}>
       {children}
     </ProductContext.Provider>

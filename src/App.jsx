@@ -25,6 +25,7 @@ import About from "./pages/About.jsx";
 import MyProfile from "./pages/MyProfile.jsx";
 import Dashboard from "./pages/DashBoard.jsx";
 import Favorites from "./pages/Favorites";
+import CategoryTable from "./components/dashboard/CategoryTable.jsx";
 
 
 function App() {
@@ -85,6 +86,7 @@ useEffect(() => {
           >
             <Route path="/dashboard/users" element={<UserTable />} />
             <Route path="/dashboard/products" element={<ProductTable />} />
+            <Route path="/dashboard/orders" element={<CategoryTable/>} />
           </Route>
         </Routes>
       </div>
