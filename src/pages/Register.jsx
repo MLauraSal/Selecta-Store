@@ -43,7 +43,7 @@ const Register = () => {
         password: formData.password,
         profilePic: preview || "/img/user-default.jpg",
       });
-  
+       
       Swal.fire({
         icon: "success",
         title: "Successful registration",

@@ -8,6 +8,7 @@ import {
 } from "@mui/material";
 
 import { useState, useEffect } from "react";
+import { uploadImagesToCloudinary } from "../../services/cloudinaryService";
 
 const inputStyles = {
   "& .MuiInputBase-root": {
@@ -38,11 +39,14 @@ export default function ProductFormModal({
   onSave,
   initialData,
 }) {
+  const [uploading, setUploading] = useState(false);
+
   const [formData, setFormData] = useState({
     name: "",
     price: "",
     stock: "",
     images: [],
+    imageFiles: [],
     imageUrlsText: "",
     description: "",
     category: "",
@@ -54,13 +58,17 @@ export default function ProductFormModal({
   useEffect(() => {
     if (initialData) {
       const images = initialData.images || initialData.image || [];
-      const imagesArray = Array.isArray(images) ? images : [images].filter(Boolean);
+      const imagesArray = Array.isArray(images)
+        ? images.filter(Boolean)
+        : [images].filter(Boolean);
 
       setFormData({
+        
         name: initialData.name || "",
         price: initialData.price || "",
         stock: initialData.stock || "",
         images: imagesArray,
+        imageFiles: [],
         imageUrlsText: imagesArray.join("\n"),
         description: initialData.description || "",
         category:
@@ -77,6 +85,7 @@ export default function ProductFormModal({
         price: "",
         stock: "",
         images: [],
+        imageFiles: [],
         imageUrlsText: "",
         description: "",
         category: "",
@@ -102,7 +111,13 @@ export default function ProductFormModal({
         images: urls,
       }));
 
-      setPreviewImages(urls);
+      setPreviewImages([
+        ...urls,
+        ...(formData.imageFiles || []).map((file) =>
+          URL.createObjectURL(file)
+        ),
+      ]);
+
       return;
     }
 
@@ -114,23 +129,24 @@ export default function ProductFormModal({
 
   const handleFilesChange = (e) => {
     const files = Array.from(e.target.files || []);
+
+    if (files.length === 0) return;
+
     const localPreviews = files.map((file) => URL.createObjectURL(file));
 
-    const updatedImages = [...formData.images, ...localPreviews];
-
-    setPreviewImages(updatedImages);
+    setPreviewImages((prev) => [...prev, ...localPreviews]);
 
     setFormData((prev) => ({
       ...prev,
-      images: updatedImages,
-      imageUrlsText: updatedImages.join("\n"),
+      imageFiles: [...prev.imageFiles, ...files],
     }));
   };
 
   const handleRemoveImage = (imageToRemove) => {
-    const updatedImages = previewImages.filter((img) => img !== imageToRemove);
+    const updatedImages = formData.images.filter((img) => img !== imageToRemove);
+    const updatedPreviews = previewImages.filter((img) => img !== imageToRemove);
 
-    setPreviewImages(updatedImages);
+    setPreviewImages(updatedPreviews);
 
     setFormData((prev) => ({
       ...prev,
@@ -139,27 +155,41 @@ export default function ProductFormModal({
     }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!formData.name || !formData.price || !formData.stock) return;
-
-    onSave({
-      name: formData.name,
-      price: parseFloat(formData.price),
-      stock: parseInt(formData.stock),
-      images: formData.images,
-      image: formData.images,
-      description: formData.description,
-      category: formData.category,
-      subcategory: formData.subcategory,
-    });
-
-    onClose();
+  
+    try {
+      setUploading(true);
+  
+      let finalImages = [...formData.images];
+  
+      if (formData.imageFiles.length > 0) {
+        const uploadedUrls = await uploadImagesToCloudinary(formData.imageFiles);
+        finalImages = [...finalImages, ...uploadedUrls];
+      }
+  
+      await onSave({
+        name: formData.name,
+        price: parseFloat(formData.price),
+        stock: parseInt(formData.stock),
+        images: finalImages,
+        description: formData.description,
+        category: formData.category,
+        subcategory: formData.subcategory,
+      });
+  
+      onClose();
+    } catch (error) {
+      console.error("Error saving product:", error);
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={uploading ? undefined : onClose}
       fullWidth
       maxWidth="sm"
       PaperProps={{
@@ -239,6 +269,7 @@ export default function ProductFormModal({
             type="file"
             accept="image/*"
             multiple
+            disabled={uploading}
             onChange={handleFilesChange}
             className="block w-full text-sm text-gray-400 file:mr-4 file:py-3 file:px-5 file:rounded-2xl file:border-0 file:text-sm file:font-bold file:bg-accent file:text-primary hover:file:shadow-[0_0_20px_rgba(200,169,106,0.35)]"
           />
@@ -252,6 +283,7 @@ export default function ProductFormModal({
           fullWidth
           multiline
           rows={3}
+          disabled={uploading}
           sx={inputStyles}
         />
 
@@ -259,7 +291,7 @@ export default function ProductFormModal({
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {previewImages.map((img, index) => (
               <div
-                key={index}
+                key={`${img}-${index}`}
                 className="relative rounded-2xl overflow-hidden border border-[#2A2A2A] bg-primary"
               >
                 <img
@@ -270,8 +302,9 @@ export default function ProductFormModal({
 
                 <button
                   type="button"
+                  disabled={uploading}
                   onClick={() => handleRemoveImage(img)}
-                  className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/70 text-white hover:bg-red-500 transition"
+                  className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/70 text-white hover:bg-red-500 transition disabled:opacity-50"
                 >
                   ×
                 </button>
@@ -320,6 +353,7 @@ export default function ProductFormModal({
       >
         <Button
           onClick={onClose}
+          disabled={uploading}
           sx={{
             borderRadius: "14px",
             px: 3,
@@ -338,6 +372,7 @@ export default function ProductFormModal({
 
         <Button
           onClick={handleSubmit}
+          disabled={uploading}
           variant="contained"
           sx={{
             borderRadius: "14px",
@@ -353,7 +388,7 @@ export default function ProductFormModal({
             },
           }}
         >
-          Save
+          {uploading ? "Uploading..." : "Save"}
         </Button>
       </DialogActions>
     </Dialog>

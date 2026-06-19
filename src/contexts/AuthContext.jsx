@@ -66,19 +66,31 @@ export const AuthProvider = ({ children }) => {
 
     return firestoreUser;
   };
-
-  const register = async ({ email, password, name, username, profilePic }) => {
+  const register = async ({
+    email,
+    password,
+    name,
+    username,
+    profilePic,
+  }) => {
+  
+    const existingUser = await getUserByEmail(email);
+  
+    if (existingUser) {
+      throw new Error("This email is already registered");
+    }
+  
     const credential = await createUserWithEmailAndPassword(
       auth,
       email,
       password
     );
-
+  
     await updateProfile(credential.user, {
       displayName: name,
       photoURL: profilePic || "",
     });
-
+  
     const newUser = await createUser({
       uid: credential.user.uid,
       name,
@@ -87,14 +99,17 @@ export const AuthProvider = ({ children }) => {
       profilePic: profilePic || "",
       role: "user",
     });
-
+  
     setUser(newUser);
     setAdmin(false);
-    localStorage.setItem("userData", JSON.stringify(newUser));
-
+  
+    localStorage.setItem(
+      "userData",
+      JSON.stringify(newUser)
+    );
+  
     return newUser;
   };
-
   const updateUser = async (updatedData) => {
     if (!user?.id) return;
 
@@ -112,7 +127,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("userData");
   };
 
-  const verifyLog = () => {};
+  
 
   return (
     <AuthContext.Provider
@@ -123,7 +138,7 @@ export const AuthProvider = ({ children }) => {
         login,
         register,
         logout,
-        verifyLog,
+        
         updateUser,
       }}
     >

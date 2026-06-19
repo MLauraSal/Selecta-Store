@@ -1,8 +1,7 @@
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useState } from "react";
-import { useContext, useEffect } from "react";
-import AuthContext from "./contexts/AuthContext.jsx";
+
 import UserProtectedRoute from "./routes/UserProtectedRoute.jsx";
 import ProtectedRoute from "./routes/ProtectedRoute.jsx";
 
@@ -32,11 +31,7 @@ function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   const toggleCart = () => setIsCartOpen((prev) => !prev);
-  const { verifyLog } = useContext(AuthContext);
-
-useEffect(() => {
-  verifyLog();
-}, []);
+ 
 
   return (
     <Router>

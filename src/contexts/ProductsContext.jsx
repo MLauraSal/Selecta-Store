@@ -1,23 +1,32 @@
 import { createContext, useEffect, useState } from "react";
-import { 
-  getAllProducts, 
-  createProduct, 
-  updateProduct, 
-  deleteProduct 
+import {
+  getAllProducts,
+  createProduct,
+  updateProduct,
+  deleteProduct,
 } from "../services/productService";
 
 const ProductContext = createContext();
 
 export const ProductsProvider = ({ children }) => {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState(() => {
+    const cachedProducts = sessionStorage.getItem("products");
+    return cachedProducts ? JSON.parse(cachedProducts) : [];
+  });
 
-  
+  const [loading, setLoading] = useState(() => {
+    return !sessionStorage.getItem("products");
+  });
+
   const loadProducts = async () => {
     try {
       setLoading(true);
+
       const data = await getAllProducts();
-      setProducts(data);
+      const safeData = data || [];
+
+      setProducts(safeData);
+      sessionStorage.setItem("products", JSON.stringify(safeData));
     } catch (error) {
       console.error("Error loading products:", error);
     } finally {
@@ -26,64 +35,62 @@ export const ProductsProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        const data = await getAllProducts();
-        setProducts(data);
-      } catch (error) {
-        console.error("Error loading products:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
+    if (products.length === 0) {
+      loadProducts();
+    }
   }, []);
 
-  // CREATE
   const addProduct = async (productData) => {
-  
     const newProduct = await createProduct(productData);
-    
-   
-    setProducts((prev) => [...prev, newProduct]);
+
+    if (!newProduct) return;
+
+    setProducts((prev) => {
+      const updated = [...prev, newProduct];
+      sessionStorage.setItem("products", JSON.stringify(updated));
+      return updated;
+    });
   };
 
-  // UPDATE
   const editProduct = async (id, updatedData) => {
-    await updateProduct(id, updatedData); 
-    
-    setProducts((prev) =>
-      prev.map((product) =>
-        product.id === id ? { ...product, ...updatedData } : product
-      )
-    );
+    const updatedProduct = await updateProduct(id, updatedData);
+
+    if (!updatedProduct) return;
+
+    setProducts((prev) => {
+      const updated = prev.map((product) =>
+        product.id === id ? { ...product, ...updatedProduct } : product
+      );
+
+      sessionStorage.setItem("products", JSON.stringify(updated));
+      return updated;
+    });
   };
 
-  // DELETE
   const removeProduct = async (id) => {
-    await deleteProduct(id); 
-    
-    setProducts((prev) =>
-      prev.filter((product) => product.id !== id)
-    );
-  };
+    await deleteProduct(id);
 
-  if (loading) return <div>Loading products...</div>;
+    setProducts((prev) => {
+      const updated = prev.filter((product) => product.id !== id);
+      sessionStorage.setItem("products", JSON.stringify(updated));
+      return updated;
+    });
+  };
 
   return (
-    <ProductContext.Provider value={{ 
-      products,
-      loading, 
-      addProduct, 
-      editProduct, 
-      removeProduct,
-      refreshProducts: loadProducts,
-    }}>
+    <ProductContext.Provider
+      value={{
+        products,
+        loading,
+        addProduct,
+        editProduct,
+        removeProduct,
+        refreshProducts: loadProducts,
+      }}
+    >
       {children}
     </ProductContext.Provider>
   );
-}
+};
 
 export default ProductContext;

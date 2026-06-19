@@ -3,17 +3,13 @@ import {
   AppBar,
   Toolbar,
   Typography,
-  Avatar,
-  IconButton,
+  Avatar
 } from "@mui/material";
 
-import MenuIcon from "@mui/icons-material/Menu";
+
 import AuthContext from "../../contexts/AuthContext";
 
-export default function DashboardHeader({
-  sidebarOpen,
-  setSidebarOpen,
-}) {
+export default function DashboardHeader() {
   const { user } = useContext(AuthContext);
 
   const displayName = user?.name || user?.username || "Administrator";
@@ -30,18 +26,7 @@ export default function DashboardHeader({
     >
       <Toolbar className="flex justify-between min-h-[80px]">
         <div className="flex items-center gap-3">
-        <IconButton
-  edge="start"
-  onClick={() =>
-    setSidebarOpen(!sidebarOpen)
-  }
-  sx={{
-    color: "#FFFFFF",
-  }}
->
-  <MenuIcon />
-</IconButton>
-
+      
           <div>
             <p className="text-accent uppercase tracking-[4px] text-[10px]">
               Admin Panel

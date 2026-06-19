@@ -12,17 +12,19 @@ import App from "./App.jsx";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <AuthProvider>
+    <UsersProvider>
       <ProductsProvider>
         <CategoriesProvider>
-          <UsersProvider>
+          
             <CartProvider>
               <FavoritesProvider>
                 <App />
               </FavoritesProvider>
             </CartProvider>
-          </UsersProvider>
+         
         </CategoriesProvider>
       </ProductsProvider>
+    </UsersProvider>
     </AuthProvider>
   </StrictMode>
 );

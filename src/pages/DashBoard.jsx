@@ -13,7 +13,7 @@ import { useCategory } from "../hooks/useCategory";
 import { useUser } from "../hooks/useUser";
 
 export default function Dashboard() {
-  const [tab, setTab] = useState("products", "category", "users");
+  const [tab, setTab] = useState("products", "users", "category");
   const { products = [] } = useProducts();
   const {categories = []} = useCategory();
   const { users = [] } = useUser();
@@ -21,9 +21,11 @@ export default function Dashboard() {
 
   return (
     <section className="min-h-screen bg-gradient-to-b from-primary to-[#1A1A1A] flex">
-     <DashboardSidebar
+    <DashboardSidebar
   sidebarOpen={sidebarOpen}
   setSidebarOpen={setSidebarOpen}
+  tab={tab}
+  setTab={setTab}
 />
       <div className="flex-1 flex flex-col min-w-0">
       <DashboardHeader
@@ -56,13 +58,15 @@ export default function Dashboard() {
             <div className="bg-[#181818] border border-[#2A2A2A] rounded-[28px] p-6 shadow-[0_10px_40px_rgba(0,0,0,0.45)]">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-400 uppercase text-xs tracking-[4px]">
+                <button onClick={() => setTab("products")} className="text-left">
+                <p className="text-gray-400 uppercase text-xs tracking-[4px]">
                     Products
                   </p>
 
                   <h3 className="text-4xl font-black text-text mt-3">
                     {products.length}
                   </h3>
+                </button>
                 </div>
 
                 <div className="w-16 h-16 rounded-2xl bg-accent text-primary flex items-center justify-center text-2xl">
@@ -73,13 +77,16 @@ export default function Dashboard() {
             <div className="bg-[#181818] border border-[#2A2A2A] rounded-[28px] p-6 shadow-[0_10px_40px_rgba(0,0,0,0.45)]">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-400 uppercase text-xs tracking-[4px]">
+                <button onClick={() => setTab("category")} className="text-left">
+                <p className="text-gray-400 uppercase text-xs tracking-[4px]">
                     Categories
                   </p>
 
                   <h3 className="text-4xl font-black text-text mt-3">
                     {categories.length}
                   </h3>
+
+                </button>
                 </div>
 
                 <div className="w-16 h-16 rounded-2xl bg-accent text-primary flex items-center justify-center text-2xl">
@@ -91,13 +98,15 @@ export default function Dashboard() {
             <div className="bg-[#181818] border border-[#2A2A2A] rounded-[28px] p-6 shadow-[0_10px_40px_rgba(0,0,0,0.45)]">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-400 uppercase text-xs tracking-[4px]">
+                 <button onClick={() => setTab("users")} className="text-left">
+                 <p className="text-gray-400 uppercase text-xs tracking-[4px]">
                     Users
                   </p>
 
                   <h3 className="text-4xl font-black text-text mt-3">
                     {users.length}
                   </h3>
+                 </button>
                 </div>
 
                 <div className="w-16 h-16 rounded-2xl bg-accent text-primary flex items-center justify-center text-2xl">
