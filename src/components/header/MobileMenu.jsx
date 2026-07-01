@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getAllCategories } from "../../services/categoryService.js";
+import Search from "./Search.jsx";
 
 const slugify = (text) =>
   text.toLowerCase().trim().replaceAll(" ", "-");
@@ -39,6 +40,9 @@ export default function MobileMenu({ open, onClose }) {
           >
             ✕
           </button>
+        </div>
+        <div className="mb-8">
+          <Search />
         </div>
 
         <nav className="mb-8">
