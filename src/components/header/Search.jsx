@@ -19,8 +19,8 @@ export default function Search() {
     }
 
     const results = products.filter((p) =>
-      p.name.toLowerCase().includes(value.toLowerCase())
-    );
+  p.name?.toLowerCase().includes(value.toLowerCase())
+);
     setFilteredProducts(results);
   };
 
@@ -67,11 +67,15 @@ export default function Search() {
               onClick={() => setFilteredProducts([])} 
             >
               <img
-                src={product.image}
-                alt={product.name}
-                className="w-10 h-10 object-cover rounded mr-3"
-                crossOrigin="anonymous"
-              />
+  src={
+    Array.isArray(product.images)
+      ? product.images[0]
+      : product.images || product.image || "/img/no-image.png"
+  }
+  alt={product.name}
+  loading="lazy"
+  className="w-10 h-10 object-cover rounded mr-3"
+/>
               <span className="text-sm text-gray-700">{product.name}</span>
             </Link>
           ))}
