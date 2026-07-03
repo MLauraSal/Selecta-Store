@@ -9,6 +9,7 @@ import { HiArrowLeft } from "react-icons/hi";
 import { useCart } from "../hooks/useCart";
 import { useFlyToCart } from "../hooks/useFlyToCart";
 import { getProductById } from "../services/productService";
+import { getProductImage } from "../utils/getProductImage";
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -26,21 +27,39 @@ export default function ProductDetail() {
   useEffect(() => {
     getProductById(id)
       .then((data) => {
-        const images =
-          data.images ||
-          data.image ||
-          [];
-  
-        const firstImage = Array.isArray(images)
-          ? images[0]
-          : images;
-  
+        if (!data) {
+          throw new Error("Product not found");
+        }
+
         setProduct(data);
-        setSelectedImage(firstImage);
+        setSelectedImage(getProductImage(data));
       })
       .catch((err) => setError(err.message))
       .finally(() => setCharging(false));
   }, [id]);
+
+  const getGalleryImages = (item) => {
+    if (!item) return [];
+
+    if (Array.isArray(item.images) && item.images.length > 0) {
+      return item.images;
+    }
+
+    if (typeof item.images === "string") {
+      return [item.images];
+    }
+
+    if (Array.isArray(item.image) && item.image.length > 0) {
+      return item.image;
+    }
+
+    if (typeof item.image === "string") {
+      return [item.image];
+    }
+
+    return [];
+  };
+
   const handleAddToCart = () => {
     addToCart(product);
     animateToCart(imageRef.current);
@@ -50,17 +69,19 @@ export default function ProductDetail() {
     return (
       <div className="min-h-screen flex justify-center items-center bg-primary">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-14 h-14 border-4 border-accent/30 border-t-accent rounded-full animate-spin"></div>
+          <div className="w-14 h-14 border-4 border-accent/30 border-t-accent rounded-full animate-spin" />
           <p className="text-text tracking-wide">Loading product...</p>
         </div>
       </div>
     );
   }
 
-  if (error) {
+  if (error || !product) {
     return (
       <div className="min-h-screen flex flex-col justify-center items-center bg-primary px-4 text-center">
-        <p className="text-red-400 text-xl mb-6">{error}</p>
+        <p className="text-red-400 text-xl mb-6">
+          {error || "Product not found"}
+        </p>
 
         <Link
           to="/products"
@@ -71,6 +92,9 @@ export default function ProductDetail() {
       </div>
     );
   }
+
+  const gallery = getGalleryImages(product);
+  const categoryName = product.category?.name || product.category || "Product";
 
   return (
     <section className="bg-gradient-to-b from-primary to-[#1A1A1A] min-h-screen py-10 px-4">
@@ -84,7 +108,6 @@ export default function ProductDetail() {
         </Link>
 
         <div className="grid lg:grid-cols-2 gap-10 items-start">
-          {/* IMAGES */}
           <motion.div
             initial={{ opacity: 0, x: -60 }}
             animate={{ opacity: 1, x: 0 }}
@@ -94,27 +117,26 @@ export default function ProductDetail() {
             <div className="bg-[#181818] border border-[#2A2A2A] rounded-[36px] overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.45)]">
               <img
                 ref={imageRef}
-                src={selectedImage}
+                src={selectedImage || getProductImage(product)}
                 alt={product.name}
                 className="w-full h-[420px] sm:h-[620px] object-cover"
               />
             </div>
 
-            {(product.images || product.image)?.length > 1 && (
+            {gallery.length > 1 && (
               <div className="grid grid-cols-4 gap-4">
-                {product.image.map((img, index) => (
+                {gallery.map((img, index) => (
                   <button
-                    key={index}
+                    key={`${img}-${index}`}
                     onClick={() => setSelectedImage(img)}
                     className={`rounded-2xl overflow-hidden border transition ${
-                      selectedImage === img
-                        ? "border-accent"
-                        : "border-[#2A2A2A]"
+                      selectedImage === img ? "border-accent" : "border-[#2A2A2A]"
                     }`}
                   >
                     <img
                       src={img}
                       alt={product.name}
+                      loading="lazy"
                       className="w-full h-24 object-cover"
                     />
                   </button>
@@ -123,7 +145,6 @@ export default function ProductDetail() {
             )}
           </motion.div>
 
-         
           <motion.div
             initial={{ opacity: 0, x: 60 }}
             animate={{ opacity: 1, x: 0 }}
@@ -131,7 +152,7 @@ export default function ProductDetail() {
             className="bg-[#181818] border border-[#2A2A2A] rounded-[36px] p-6 sm:p-10 shadow-[0_10px_40px_rgba(0,0,0,0.45)]"
           >
             <p className="uppercase tracking-[5px] text-accent text-xs mb-4">
-              {product.category?.name}
+              {categoryName}
             </p>
 
             <h1 className="text-text text-4xl sm:text-5xl font-black leading-tight">
@@ -144,9 +165,7 @@ export default function ProductDetail() {
               <IoStar />
               <IoStar />
               <IoStarOutline />
-              <span className="text-gray-400 text-sm ml-3">
-                4.0 reviews
-              </span>
+              <span className="text-gray-400 text-sm ml-3">4.0 reviews</span>
             </div>
 
             <p className="text-accent text-5xl font-black mt-8">
@@ -160,14 +179,17 @@ export default function ProductDetail() {
             <div className="mt-10 grid grid-cols-2 gap-4">
               <div className="bg-black/40 border border-[#2A2A2A] rounded-2xl p-5">
                 <p className="text-accent text-sm uppercase tracking-[3px]">
-                Stock
+                  Stock
                 </p>
-                <p className="text-text font-bold mt-2"> {product.stock > 0 ? "Stock" : "Not available"}</p>
+
+                <p className="text-text font-bold mt-2">
+                  {product.stock > 0 ? `${product.stock} available` : "Not available"}
+                </p>
               </div>
 
               <div className="bg-black/40 border border-[#2A2A2A] rounded-2xl p-5">
                 <p className="text-accent text-sm uppercase tracking-[3px]">
-                Shipment
+                  Shipment
                 </p>
                 <p className="text-text font-bold mt-2">Fast</p>
               </div>

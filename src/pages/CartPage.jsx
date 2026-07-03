@@ -3,6 +3,7 @@ import { useCart } from "../hooks/useCart";
 import { Link } from "react-router-dom";
 import { IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import { getProductImage } from "../utils/getProductImage";
 
 export default function CartPage() {
   const {
@@ -28,9 +29,7 @@ export default function CartPage() {
 
         {cartItems.length === 0 ? (
           <div className="bg-[#181818] border border-[#2A2A2A] rounded-[32px] p-10 text-center shadow-[0_20px_60px_rgba(0,0,0,0.55)]">
-            <p className="text-gray-400 mb-6">
-            Your cart is empty.
-            </p>
+            <p className="text-gray-400 mb-6">Your cart is empty.</p>
 
             <Link
               to="/products"
@@ -42,73 +41,64 @@ export default function CartPage() {
         ) : (
           <>
             <div className="grid gap-5 mb-8">
-              {cartItems.map((item) => {
-                const image = Array.isArray(item.image)
-                  ? item.image[0]
-                  : item.image;
+              {cartItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex flex-col sm:flex-row gap-5 items-center bg-[#181818] border border-[#2A2A2A] rounded-[28px] p-5 shadow-[0_10px_40px_rgba(0,0,0,0.45)] hover:border-accent transition"
+                >
+                  <img
+                    src={getProductImage(item)}
+                    alt={item.name}
+                    loading="lazy"
+                    className="w-28 h-28 object-cover border border-[#2A2A2A] rounded-2xl"
+                  />
 
-                return (
-                  <div
-                    key={item.id}
-                    className="flex flex-col sm:flex-row gap-5 items-center bg-[#181818] border border-[#2A2A2A] rounded-[28px] p-5 shadow-[0_10px_40px_rgba(0,0,0,0.45)] hover:border-accent transition"
-                  >
-                    <img
-                      src={image}
-                      alt={item.name}
-                      className="w-28 h-28 object-cover border border-[#2A2A2A] rounded-2xl"
-                    />
+                  <div className="flex-1 text-center sm:text-left">
+                    <h2 className="font-bold text-xl text-text">{item.name}</h2>
 
-                    <div className="flex-1 text-center sm:text-left">
-                      <h2 className="font-bold text-xl text-text">
-                        {item.name}
-                      </h2>
-
-                      <p className="text-sm text-gray-400 mt-1">
+                    <p className="text-sm text-gray-400 mt-1">
                       Unit price: ${item.price}
-                      </p>
+                    </p>
 
-                      <div className="flex items-center justify-center sm:justify-start mt-4 gap-3">
-                        <button
-                          onClick={() => decreaseQuantity(item.id)}
-                          className="w-9 h-9 rounded-full border border-[#2A2A2A] text-text hover:bg-accent hover:text-primary transition"
-                        >
-                          −
-                        </button>
-
-                        <span className="text-text font-bold">
-                          {item.quantity}
-                        </span>
-
-                        <button
-                          onClick={() => increaseQuantity(item.id)}
-                          className="w-9 h-9 rounded-full border border-[#2A2A2A] text-text hover:bg-accent hover:text-primary transition"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col items-center sm:items-end gap-3">
-                      <p className="text-2xl font-black text-accent">
-                        ${(item.price * item.quantity).toFixed(2)}
-                      </p>
-
-                      <IconButton
-                        onClick={() => removeFromCart(item.id)}
-                        sx={{
-                          color: "#ff6b6b",
-                          border: "1px solid #2A2A2A",
-                          "&:hover": {
-                            backgroundColor: "rgba(255,107,107,0.12)",
-                          },
-                        }}
+                    <div className="flex items-center justify-center sm:justify-start mt-4 gap-3">
+                      <button
+                        onClick={() => decreaseQuantity(item.id)}
+                        className="w-9 h-9 rounded-full border border-[#2A2A2A] text-text hover:bg-accent hover:text-primary transition"
                       >
-                        <CloseIcon fontSize="small" />
-                      </IconButton>
+                        −
+                      </button>
+
+                      <span className="text-text font-bold">{item.quantity}</span>
+
+                      <button
+                        onClick={() => increaseQuantity(item.id)}
+                        className="w-9 h-9 rounded-full border border-[#2A2A2A] text-text hover:bg-accent hover:text-primary transition"
+                      >
+                        +
+                      </button>
                     </div>
                   </div>
-                );
-              })}
+
+                  <div className="flex flex-col items-center sm:items-end gap-3">
+                    <p className="text-2xl font-black text-accent">
+                      ${(item.price * item.quantity).toFixed(2)}
+                    </p>
+
+                    <IconButton
+                      onClick={() => removeFromCart(item.id)}
+                      sx={{
+                        color: "#ff6b6b",
+                        border: "1px solid #2A2A2A",
+                        "&:hover": {
+                          backgroundColor: "rgba(255,107,107,0.12)",
+                        },
+                      }}
+                    >
+                      <CloseIcon fontSize="small" />
+                    </IconButton>
+                  </div>
+                </div>
+              ))}
             </div>
 
             <div className="bg-[#181818] border border-[#2A2A2A] rounded-[32px] p-6 flex flex-col sm:flex-row justify-between items-center gap-6 shadow-[0_20px_60px_rgba(0,0,0,0.55)]">

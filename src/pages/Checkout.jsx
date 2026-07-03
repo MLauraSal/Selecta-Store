@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useCart } from "../hooks/useCart";
+import { getProductImage } from "../utils/getProductImage";
 
 export default function Checkout() {
   const { cartItems, cartTotal } = useCart();
@@ -31,7 +32,7 @@ export default function Checkout() {
           </p>
 
           <h1 className="text-4xl lg:text-5xl font-black text-text">
-          Complete purchase
+            Complete purchase
           </h1>
         </div>
 
@@ -41,17 +42,14 @@ export default function Checkout() {
             className="bg-[#181818] border border-[#2A2A2A] rounded-[32px] p-8 shadow-[0_20px_60px_rgba(0,0,0,0.55)] space-y-5"
           >
             <h2 className="text-2xl font-bold text-text mb-4">
-            Shipping information
+              Shipping information
             </h2>
 
             {[
               { name: "name", placeholder: "Full Name" },
-
-{ name: "email", placeholder: "Email Address", type: "email" },
-
-{ name: "address", placeholder: "Address" },
-
-{ name: "phone", placeholder: "Phone Number" },
+              { name: "email", placeholder: "Email Address", type: "email" },
+              { name: "address", placeholder: "Address" },
+              { name: "phone", placeholder: "Phone Number" },
             ].map((field) => (
               <input
                 key={field.name}
@@ -98,44 +96,40 @@ export default function Checkout() {
 
           <div className="bg-[#181818] border border-[#2A2A2A] rounded-[32px] p-8 shadow-[0_20px_60px_rgba(0,0,0,0.55)]">
             <h2 className="text-2xl font-bold text-text mb-6">
-            Purchase summary
+              Purchase summary
             </h2>
 
             {cartItems.length === 0 ? (
               <p className="text-gray-400">Your cart is empty.</p>
             ) : (
               <ul className="space-y-4">
-                {cartItems.map((item) => {
-                  const image = Array.isArray(item.image)
-                    ? item.image[0]
-                    : item.image;
+                {cartItems.map((item) => (
+                  <li
+                    key={item.id}
+                    className="flex items-center gap-4 border-b border-[#2A2A2A] pb-4"
+                  >
+                    <img
+                      src={getProductImage(item)}
+                      alt={item.name}
+                      loading="lazy"
+                      className="w-16 h-16 rounded-xl object-cover border border-[#2A2A2A]"
+                    />
 
-                  return (
-                    <li
-                      key={item.id}
-                      className="flex items-center gap-4 border-b border-[#2A2A2A] pb-4"
-                    >
-                      <img
-                        src={image}
-                        alt={item.name}
-                        className="w-16 h-16 rounded-xl object-cover border border-[#2A2A2A]"
-                      />
-
-                      <div className="flex-1">
-                        <p className="text-text font-semibold line-clamp-1">
-                          {item.name}
-                        </p>
-                        <p className="text-gray-400 text-sm">
-                        Amount: {item.quantity}
-                        </p>
-                      </div>
-
-                      <p className="text-accent font-bold">
-                        ${(item.price * item.quantity).toFixed(2)}
+                    <div className="flex-1">
+                      <p className="text-text font-semibold line-clamp-1">
+                        {item.name}
                       </p>
-                    </li>
-                  );
-                })}
+
+                      <p className="text-gray-400 text-sm">
+                        Amount: {item.quantity}
+                      </p>
+                    </div>
+
+                    <p className="text-accent font-bold">
+                      ${(item.price * item.quantity).toFixed(2)}
+                    </p>
+                  </li>
+                ))}
               </ul>
             )}
 
