@@ -1,6 +1,9 @@
+import { useEffect, useState } from "react";
 import useProducts from "../hooks/useProducts";
 import { useSearchParams, Link } from "react-router-dom";
 import ProductsGrid from "../components/shop/ProductsGrid";
+
+const PRODUCTS_PER_PAGE = 8;
 
 const slugify = (text = "") =>
   String(text)
@@ -14,6 +17,8 @@ export default function Products() {
   const [searchParams] = useSearchParams();
   const selectedCategory = searchParams.get("category");
   const selectedSubcategory = searchParams.get("subcategory");
+
+  const [currentPage, setCurrentPage] = useState(1);
 
   const getCategorySlug = (product) => {
     if (typeof product.category === "object") {
@@ -38,6 +43,19 @@ export default function Products() {
 
     return matchCategory && matchSubcategory;
   });
+
+  const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
+
+  const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
+
+  const paginatedProducts = filteredProducts.slice(
+    startIndex,
+    startIndex + PRODUCTS_PER_PAGE
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, selectedSubcategory]);
 
   if (loading) {
     return (
@@ -70,8 +88,44 @@ export default function Products() {
           <div className="w-28 h-[2px] bg-accent rounded-full mt-5"></div>
         </div>
 
-        {filteredProducts.length > 0 ? (
-          <ProductsGrid products={filteredProducts} />
+        {paginatedProducts.length > 0 ? (
+          <>
+            <ProductsGrid products={paginatedProducts} />
+
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-3 mt-12 flex-wrap">
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage((prev) => prev - 1)}
+                  className="px-5 py-3 rounded-2xl border border-[#2A2A2A] text-text disabled:opacity-40 disabled:cursor-not-allowed hover:border-accent hover:text-accent transition"
+                >
+                  Prev
+                </button>
+
+                {Array.from({ length: totalPages }, (_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentPage(index + 1)}
+                    className={`w-11 h-11 rounded-2xl border transition ${
+                      currentPage === index + 1
+                        ? "bg-accent text-primary border-accent"
+                        : "border-[#2A2A2A] text-text hover:border-accent hover:text-accent"
+                    }`}
+                  >
+                    {index + 1}
+                  </button>
+                ))}
+
+                <button
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage((prev) => prev + 1)}
+                  className="px-5 py-3 rounded-2xl border border-[#2A2A2A] text-text disabled:opacity-40 disabled:cursor-not-allowed hover:border-accent hover:text-accent transition"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
         ) : (
           <div className="text-center text-gray-400 py-20">
             There are no products in this category.

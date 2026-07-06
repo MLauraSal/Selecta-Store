@@ -8,18 +8,44 @@ import {
   Button,
   IconButton,
   Avatar,
+  TextField,
+  MenuItem,
 } from "@mui/material";
 
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 import ProductFormModal from "./ProductFormModal";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import useProducts from "../../hooks/useProducts";
+import { useCategory } from "../../hooks/useCategory";
+import { getProductImage } from "../../utils/getProductImage";
+
+const ITEMS_PER_PAGE = 10;
 
 const tableCellStyles = {
   color: "#FFFFFF",
   borderColor: "#2A2A2A",
+};
+
+const inputStyles = {
+  "& .MuiInputBase-root": {
+    backgroundColor: "#111111",
+    color: "#FFFFFF",
+    borderRadius: "16px",
+  },
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: "#2A2A2A",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: "#C8A96A",
+  },
+  "& .MuiInputLabel-root": {
+    color: "#9CA3AF",
+  },
+  "& .MuiInputLabel-root.Mui-focused": {
+    color: "#C8A96A",
+  },
 };
 
 export default function ProductTable() {
@@ -31,8 +57,15 @@ export default function ProductTable() {
     loading,
   } = useProducts();
 
+  const { categories = [] } = useCategory();
+
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+
+  const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [orderBy, setOrderBy] = useState("name");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const handleAdd = () => {
     setSelectedProduct(null);
@@ -44,9 +77,9 @@ export default function ProductTable() {
     setModalOpen(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (confirm("Are you sure you want to delete this product?")) {
-      removeProduct(id);
+      await removeProduct(id);
     }
   };
 
@@ -56,19 +89,55 @@ export default function ProductTable() {
     } else {
       await addProduct(productData);
     }
-  
-    setModalOpen(false);
-  };
 
-  const getImage = (product) => {
-    const images = product.images || product.image || [];
-    return Array.isArray(images) ? images[0] : images || "/img/no-image.png";
+    setModalOpen(false);
   };
 
   const getCategory = (category) => {
     if (typeof category === "object") return category?.name || "Uncategorized";
     return category || "Uncategorized";
   };
+
+  const filteredProducts = products
+    .filter((product) => {
+      const name = product.name?.toLowerCase() || "";
+      const category = getCategory(product.category).toLowerCase();
+
+      const matchesSearch = name.includes(search.toLowerCase());
+
+      const matchesCategory =
+        categoryFilter === "all"
+          ? true
+          : category === categoryFilter.toLowerCase();
+
+      return matchesSearch && matchesCategory;
+    })
+    .sort((a, b) => {
+      if (orderBy === "name") {
+        return a.name.localeCompare(b.name);
+      }
+
+      if (orderBy === "price") {
+        return Number(a.price) - Number(b.price);
+      }
+
+      if (orderBy === "stock") {
+        return Number(a.stock) - Number(b.stock);
+      }
+
+      return 0;
+    });
+
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
+
+  const paginatedProducts = filteredProducts.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, categoryFilter, orderBy]);
 
   return (
     <div>
@@ -101,6 +170,46 @@ export default function ProductTable() {
         >
           New Product
         </Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <TextField
+          label="Search product"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          fullWidth
+          sx={inputStyles}
+        />
+
+        <TextField
+          select
+          label="Filter by category"
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value)}
+          fullWidth
+          sx={inputStyles}
+        >
+          <MenuItem value="all">All categories</MenuItem>
+
+          {categories.map((category) => (
+            <MenuItem key={category.id} value={category.name}>
+              {category.name}
+            </MenuItem>
+          ))}
+        </TextField>
+
+        <TextField
+          select
+          label="Order by"
+          value={orderBy}
+          onChange={(e) => setOrderBy(e.target.value)}
+          fullWidth
+          sx={inputStyles}
+        >
+          <MenuItem value="name">Name</MenuItem>
+          <MenuItem value="price">Price</MenuItem>
+          <MenuItem value="stock">Stock</MenuItem>
+        </TextField>
       </div>
 
       <TableContainer
@@ -145,18 +254,18 @@ export default function ProductTable() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={7} align="center" sx={tableCellStyles}>
+                <TableCell colSpan={8} align="center" sx={tableCellStyles}>
                   Loading products...
                 </TableCell>
               </TableRow>
-            ) : products.length === 0 ? (
+            ) : paginatedProducts.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} align="center" sx={tableCellStyles}>
-                  There are no products.
+                  No products found.
                 </TableCell>
               </TableRow>
             ) : (
-              products.map((product) => (
+              paginatedProducts.map((product) => (
                 <TableRow
                   key={product.id}
                   sx={{
@@ -169,7 +278,7 @@ export default function ProductTable() {
                   <TableCell sx={tableCellStyles}>
                     <Avatar
                       variant="rounded"
-                      src={getImage(product)}
+                      src={getProductImage(product)}
                       alt={product.name}
                       sx={{
                         width: 58,
@@ -204,10 +313,10 @@ export default function ProductTable() {
                   </TableCell>
 
                   <TableCell sx={tableCellStyles}>
-  <span className="bg-white/5 text-gray-300 border border-[#2A2A2A] px-3 py-1 rounded-full text-xs font-bold">
-    {product.subcategory || "No subcategory"}
-  </span>
-</TableCell>
+                    <span className="bg-white/5 text-gray-300 border border-[#2A2A2A] px-3 py-1 rounded-full text-xs font-bold">
+                      {product.subcategory || "No subcategory"}
+                    </span>
+                  </TableCell>
 
                   <TableCell sx={tableCellStyles}>
                     <p className="text-gray-400 max-w-[260px] line-clamp-2">
@@ -249,6 +358,40 @@ export default function ProductTable() {
           </TableBody>
         </Table>
       </TableContainer>
+
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-3 mt-8 flex-wrap">
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((prev) => prev - 1)}
+            className="px-5 py-3 rounded-2xl border border-[#2A2A2A] text-text disabled:opacity-40 disabled:cursor-not-allowed hover:border-accent hover:text-accent transition"
+          >
+            Prev
+          </button>
+
+          {Array.from({ length: totalPages }, (_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentPage(index + 1)}
+              className={`w-11 h-11 rounded-2xl border transition ${
+                currentPage === index + 1
+                  ? "bg-accent text-primary border-accent"
+                  : "border-[#2A2A2A] text-text hover:border-accent hover:text-accent"
+              }`}
+            >
+              {index + 1}
+            </button>
+          ))}
+
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((prev) => prev + 1)}
+            className="px-5 py-3 rounded-2xl border border-[#2A2A2A] text-text disabled:opacity-40 disabled:cursor-not-allowed hover:border-accent hover:text-accent transition"
+          >
+            Next
+          </button>
+        </div>
+      )}
 
       <ProductFormModal
         open={modalOpen}
