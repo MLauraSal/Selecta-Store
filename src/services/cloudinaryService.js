@@ -19,9 +19,12 @@ export const uploadImagesToCloudinary = async (files, folder = "products") => {
       }
     );
 
-    if (!response.ok) {
-      throw new Error("Error uploading image to Cloudinary");
-    }
+   if (!response.ok) {
+  const errorData = await response.json();
+  throw new Error(
+    errorData?.error?.message || "Error uploading image to Cloudinary"
+  );
+}
 
     const data = await response.json();
     return data.secure_url;
