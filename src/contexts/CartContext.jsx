@@ -1,13 +1,27 @@
-import { createContext } from "react";
+import { createContext, useContext, useEffect } from "react";
 import { useLocalStorage } from "../hooks/useLocalStorage";
+import AuthContext from "./AuthContext";
 
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
-  const [cartItems, setCartItems] = useLocalStorage("cartItems", []);
+  const { user } = useContext(AuthContext);
+
+  const cartKey = user?.uid || user?.id
+    ? `cartItems_${user.uid || user.id}`
+    : "cartItems_guest";
+
+  const [cartItems, setCartItems] = useLocalStorage(cartKey, []);
+
+  useEffect(() => {
+    if (!user) {
+      setCartItems([]);
+      localStorage.removeItem("cartItems_guest");
+    }
+  }, [user, setCartItems]);
 
   const cartTotal = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity,
+    (total, item) => total + Number(item.price || 0) * Number(item.quantity || 1),
     0
   );
 
@@ -53,6 +67,11 @@ export const CartProvider = ({ children }) => {
     );
   };
 
+  const clearCart = () => {
+    setCartItems([]);
+    localStorage.removeItem(cartKey);
+  };
+
   return (
     <CartContext.Provider
       value={{
@@ -62,6 +81,7 @@ export const CartProvider = ({ children }) => {
         removeFromCart,
         increaseQuantity,
         decreaseQuantity,
+        clearCart,
       }}
     >
       {children}

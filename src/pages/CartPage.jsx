@@ -1,4 +1,3 @@
-
 import { useCart } from "../hooks/useCart";
 import { Link } from "react-router-dom";
 import { IconButton } from "@mui/material";
@@ -12,6 +11,7 @@ export default function CartPage() {
     removeFromCart,
     increaseQuantity,
     decreaseQuantity,
+    clearCart,
   } = useCart();
 
   return (
@@ -68,7 +68,9 @@ export default function CartPage() {
                         −
                       </button>
 
-                      <span className="text-text font-bold">{item.quantity}</span>
+                      <span className="text-text font-bold">
+                        {item.quantity}
+                      </span>
 
                       <button
                         onClick={() => increaseQuantity(item.id)}
@@ -108,8 +110,15 @@ export default function CartPage() {
                   ${cartTotal.toFixed(2)}
                 </p>
               </div>
-
+           
               <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+
+                   <button
+                onClick={clearCart}
+                className="text-center border border-red-400 text-red-400 px-8 py-3 rounded-2xl hover:bg-red-400 hover:text-primary transition-all"
+              >
+                Clear cart
+              </button>
                 <Link
                   to="/products"
                   className="text-center border border-accent text-accent px-8 py-3 rounded-2xl hover:bg-accent hover:text-primary transition-all"
