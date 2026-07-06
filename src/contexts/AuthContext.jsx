@@ -66,31 +66,25 @@ export const AuthProvider = ({ children }) => {
 
     return firestoreUser;
   };
-  const register = async ({
-    email,
-    password,
-    name,
-    username,
-    profilePic,
-  }) => {
-  
+
+  const register = async ({ email, password, name, username, profilePic }) => {
     const existingUser = await getUserByEmail(email);
-  
+
     if (existingUser) {
       throw new Error("This email is already registered");
     }
-  
+
     const credential = await createUserWithEmailAndPassword(
       auth,
       email,
       password
     );
-  
+
     await updateProfile(credential.user, {
       displayName: name,
       photoURL: profilePic || "",
     });
-  
+
     const newUser = await createUser({
       uid: credential.user.uid,
       name,
@@ -99,25 +93,36 @@ export const AuthProvider = ({ children }) => {
       profilePic: profilePic || "",
       role: "user",
     });
-  
+
     setUser(newUser);
     setAdmin(false);
-  
-    localStorage.setItem(
-      "userData",
-      JSON.stringify(newUser)
-    );
-  
+    localStorage.setItem("userData", JSON.stringify(newUser));
+
     return newUser;
   };
-  const updateUser = async (updatedData) => {
-    if (!user?.id) return;
 
-    const updatedUser = await updateUserService(user.id, updatedData);
+  const updateUser = async (updatedData) => {
+    if (!user?.id) return null;
+
+    const dataToUpdate = {
+      ...user,
+      ...updatedData,
+    };
+
+    if (auth.currentUser) {
+      await updateProfile(auth.currentUser, {
+        displayName: dataToUpdate.name || "",
+        photoURL: dataToUpdate.profilePic || "",
+      });
+    }
+
+    const updatedUser = await updateUserService(user.id, dataToUpdate);
 
     setUser(updatedUser);
     setAdmin(updatedUser.role === "admin");
     localStorage.setItem("userData", JSON.stringify(updatedUser));
+
+    return updatedUser;
   };
 
   const logout = async () => {
@@ -126,8 +131,6 @@ export const AuthProvider = ({ children }) => {
     setAdmin(false);
     localStorage.removeItem("userData");
   };
-
-  
 
   return (
     <AuthContext.Provider
@@ -138,7 +141,6 @@ export const AuthProvider = ({ children }) => {
         login,
         register,
         logout,
-        
         updateUser,
       }}
     >

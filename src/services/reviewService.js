@@ -1,36 +1,138 @@
 import {
-    collection,
-    getDocs,
-    addDoc,
-    updateDoc,
-    deleteDoc,
-    doc,
-    getDoc,
-  } from "firebase/firestore";
-  
-  import { db } from "../config/firebaseConfig.js";
+  collection,
+  addDoc,
+  getDocs,
+  updateDoc,
+  deleteDoc,
+  doc,
+  query,
+  where,
+  orderBy,
+  serverTimestamp,
+} from "firebase/firestore";
+
+import { db } from "../config/firebaseConfig";
 
 const reviewsCollection = collection(db, "reviews");
 
-
 export const getAllReviews = async () => {
-    try {
-      const snapshot = await getDocs(reviewsCollection);
-        return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    } catch (error) {
-      console.error("Error getting reviews:", error);
-    }
+  try {
+    const q = query(reviewsCollection, orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(q);
 
+    return snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+  } catch (error) {
+    console.error("Error getting all reviews:", error);
+    return [];
+  }
+};
+
+export const getReviewsByProduct = async (productId) => {
+  try {
+    const q = query(
+      reviewsCollection,
+      where("productId", "==", productId),
+      orderBy("createdAt", "desc")
+    );
+
+    const snapshot = await getDocs(q);
+
+    return snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+  } catch (error) {
+    console.error("Error getting reviews:", error);
+    return [];
+  }
+};
+
+export const createReview = async (reviewData) => {
+  try {
+    const docRef = await addDoc(reviewsCollection, {
+      ...reviewData,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+
+    return {
+      id: docRef.id,
+      ...reviewData,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
+  } catch (error) {
+    console.error("Error creating review:", error);
+    throw error;
+  }
+};
 
-export const getReviewById = async (id) => {
-    try {
-      const reviewRef = doc(reviewsCollection, id);
-      const snapshot = await getDoc(reviewRef);
-      if (!snapshot.exists()) return null;
-      return { id: snapshot.id, ...snapshot.data() };
-    } catch (error) {
-      console.error("Error getting review by ID:", error);
-      return null;
-    }
+export const updateReview = async (id, reviewData) => {
+  try {
+    const reviewRef = doc(db, "reviews", id);
+
+    await updateDoc(reviewRef, {
+      ...reviewData,
+      updatedAt: serverTimestamp(),
+    });
+
+    return {
+      id,
+      ...reviewData,
+      updatedAt: new Date(),
+    };
+  } catch (error) {
+    console.error("Error updating review:", error);
+    throw error;
+  }
+};
+
+export const deleteReview = async (id) => {
+  try {
+    const reviewRef = doc(db, "reviews", id);
+    await deleteDoc(reviewRef);
+
+    return id;
+  } catch (error) {
+    console.error("Error deleting review:", error);
+    throw error;
+  }
+};
+
+export const getUserReviewForProduct = async (productId, userId) => {
+  try {
+    const q = query(
+      reviewsCollection,
+      where("productId", "==", productId),
+      where("userId", "==", userId)
+    );
+
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) return null;
+
+    const reviewDoc = snapshot.docs[0];
+
+    return {
+      id: reviewDoc.id,
+      ...reviewDoc.data(),
+    };
+  } catch (error) {
+    console.error("Error getting user review:", error);
+    return null;
+  }
+};
+
+export const getAverageRanking = (reviews = []) => {
+  if (reviews.length === 0) return 0;
+
+  const total = reviews.reduce(
+    (sum, review) => sum + Number(review.ranking || 0),
+    0
+  );
+
+  return Number((total / reviews.length).toFixed(1));
 };

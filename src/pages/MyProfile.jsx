@@ -1,11 +1,19 @@
 import { useContext, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import AuthContext from "../contexts/AuthContext";
+import { useNavigate, Link } from "react-router-dom";
 import Swal from "sweetalert2";
+
+import AuthContext from "../contexts/AuthContext";
+import { useFavorites } from "../hooks/useFavorites";
+import { getProductImage } from "../utils/getProductImage";
+import { uploadProfileImage } from "../services/cloudinaryService";
 
 export default function MyProfile() {
   const { user, updateUser } = useContext(AuthContext);
   const navigate = useNavigate();
+  const { favorites } = useFavorites();
+
+  const [profileFile, setProfileFile] = useState(null);
+  const [saving, setSaving] = useState(false);
 
   const [preview, setPreview] = useState(
     user?.profilePic || user?.avatar || user?.photoURL || user?.image || ""
@@ -23,7 +31,7 @@ export default function MyProfile() {
       <section className="min-h-screen bg-gradient-to-b from-primary to-[#1A1A1A] flex items-center justify-center px-4">
         <div className="bg-[#181818] border border-[#2A2A2A] rounded-[32px] p-8 text-center">
           <h2 className="text-text text-3xl font-black mb-4">
-          You are not logged in
+            You are not logged in
           </h2>
 
           <button
@@ -44,37 +52,68 @@ export default function MyProfile() {
       const file = files[0];
 
       if (file) {
-        const imageUrl = URL.createObjectURL(file);
-
-        setPreview(imageUrl);
-        setFormData({
-          ...formData,
-          profilePic: imageUrl,
-        });
+        setProfileFile(file);
+        setPreview(URL.createObjectURL(file));
       }
-    } else {
-      setFormData({
-        ...formData,
-        [id]: value,
-      });
+
+      return;
     }
+
+    setFormData((prev) => ({
+      ...prev,
+      [id]: value,
+    }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    updateUser(formData);
+    try {
+      setSaving(true);
 
-    Swal.fire({
-      icon: "success",
-      title: "Updated profile",
-      text: "Your data was saved successfully.",
-      timer: 1500,
-      showConfirmButton: false,
-      background: "#111111",
-      color: "#FFFFFF",
-      confirmButtonColor: "#C8A96A",
-    });
+      let profilePicUrl = formData.profilePic;
+
+      if (profileFile) {
+        profilePicUrl = await uploadProfileImage(profileFile);
+      }
+
+      const updatedUser = await updateUser({
+        ...formData,
+        profilePic: profilePicUrl,
+      });
+
+      setPreview(updatedUser.profilePic || "");
+      setFormData({
+        name: updatedUser.name || "",
+        username: updatedUser.username || "",
+        email: updatedUser.email || "",
+        profilePic: updatedUser.profilePic || "",
+      });
+
+      setProfileFile(null);
+
+      Swal.fire({
+        icon: "success",
+        title: "Updated profile",
+        text: "Your data was saved successfully.",
+        timer: 1500,
+        showConfirmButton: false,
+        background: "#111111",
+        color: "#FFFFFF",
+        confirmButtonColor: "#C8A96A",
+      });
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Profile error",
+        text: error.message || "The profile could not be saved.",
+        background: "#111111",
+        color: "#FFFFFF",
+        confirmButtonColor: "#C8A96A",
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -86,39 +125,98 @@ export default function MyProfile() {
           </p>
 
           <h1 className="text-4xl lg:text-5xl font-black text-text">
-          My profile
+            My profile
           </h1>
 
           <p className="text-gray-400 mt-4">
-          Edit your personal information and profile picture.
+            Edit your personal information and profile picture.
           </p>
         </div>
 
         <div className="grid lg:grid-cols-[320px_1fr] gap-8">
-          <div className="bg-[#181818] border border-[#2A2A2A] rounded-[32px] p-8 text-center shadow-[0_20px_60px_rgba(0,0,0,0.55)]">
-            <div className="w-36 h-36 rounded-full overflow-hidden mx-auto border-4 border-accent bg-primary flex items-center justify-center text-accent text-5xl font-black">
-              {preview ? (
-                <img
-                  src={preview}
-                  alt={formData.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                formData.name.charAt(0).toUpperCase()
-              )}
+          <div>
+            <div className="bg-[#181818] border border-[#2A2A2A] rounded-[32px] p-8 text-center shadow-[0_20px_60px_rgba(0,0,0,0.55)]">
+              <div className="w-36 h-36 rounded-full overflow-hidden mx-auto border-4 border-accent bg-primary flex items-center justify-center text-accent text-5xl font-black">
+                {preview ? (
+                  <img
+                    src={preview}
+                    alt={formData.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  formData.name?.charAt(0)?.toUpperCase() || "U"
+                )}
+              </div>
+
+              <h2 className="text-text text-2xl font-black mt-6">
+                {formData.name || "User"}
+              </h2>
+
+              <p className="text-gray-400 mt-2">
+                {formData.email || "No email"}
+              </p>
+
+              <span className="inline-block mt-5 bg-accent/10 text-accent border border-accent/30 px-4 py-2 rounded-full text-xs uppercase tracking-[3px]">
+                {user.role || "user"}
+              </span>
             </div>
 
-            <h2 className="text-text text-2xl font-black mt-6">
-              {formData.name || "User"}
-            </h2>
+            <div className="bg-[#181818] border border-[#2A2A2A] rounded-[32px] p-6 mt-6 shadow-[0_20px_60px_rgba(0,0,0,0.55)]">
+              <div className="flex items-center justify-between mb-5">
+                <div>
+                  <p className="text-accent uppercase tracking-[4px] text-xs">
+                    Wishlist
+                  </p>
 
-            <p className="text-gray-400 mt-2">
-              {formData.email || "No email"}
-            </p>
+                  <h3 className="text-text text-2xl font-black mt-2">
+                    My favorites
+                  </h3>
+                </div>
 
-            <span className="inline-block mt-5 bg-accent/10 text-accent border border-accent/30 px-4 py-2 rounded-full text-xs uppercase tracking-[3px]">
-              {user.role || "user"}
-            </span>
+                <span className="bg-accent text-primary font-bold px-4 py-2 rounded-full">
+                  {favorites.length}
+                </span>
+              </div>
+
+              {favorites.length === 0 ? (
+                <p className="text-gray-400 text-sm">
+                  You don't have favorite products yet.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {favorites.slice(0, 3).map((product) => (
+                    <Link
+                      key={product.id}
+                      to={`/products/${product.id}`}
+                      className="flex items-center gap-3 p-3 rounded-2xl border border-[#2A2A2A] hover:border-accent transition"
+                    >
+                      <img
+                        src={getProductImage(product)}
+                        alt={product.name}
+                        className="w-14 h-14 rounded-xl object-cover"
+                      />
+
+                      <div className="min-w-0">
+                        <p className="text-text font-bold line-clamp-1">
+                          {product.name}
+                        </p>
+
+                        <p className="text-accent text-sm font-bold">
+                          ${product.price}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+
+                  <Link
+                    to="/favorites"
+                    className="block text-center text-accent hover:underline mt-4"
+                  >
+                    View all favorites
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
 
           <form
@@ -169,7 +267,7 @@ export default function MyProfile() {
 
             <div>
               <label className="block mb-2 text-sm text-gray-300">
-              Profile Pic
+                Profile Pic
               </label>
 
               <input
@@ -177,15 +275,17 @@ export default function MyProfile() {
                 type="file"
                 accept="image/*"
                 onChange={handleChange}
-                className="block w-full text-sm text-gray-400 file:mr-4 file:py-3 file:px-5 file:rounded-2xl file:border-0 file:text-sm file:font-bold file:bg-accent file:text-primary hover:file:shadow-[0_0_20px_rgba(200,169,106,0.35)]"
+                disabled={saving}
+                className="block w-full text-sm text-gray-400 file:mr-4 file:py-3 file:px-5 file:rounded-2xl file:border-0 file:text-sm file:font-bold file:bg-accent file:text-primary hover:file:shadow-[0_0_20px_rgba(200,169,106,0.35)] disabled:opacity-50"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full bg-accent text-primary font-bold py-3 rounded-2xl hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(200,169,106,0.35)] transition-all"
+              disabled={saving}
+              className="w-full bg-accent text-primary font-bold py-3 rounded-2xl hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(200,169,106,0.35)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Save changes
+              {saving ? "Saving..." : "Save changes"}
             </button>
           </form>
         </div>

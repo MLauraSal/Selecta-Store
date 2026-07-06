@@ -10,7 +10,7 @@ import { getProductImage } from "../../utils/getProductImage";
 import { BsSuitHeartFill, BsSuitHeart } from "react-icons/bs";
 import { HiOutlineEye } from "react-icons/hi";
 import { FaShoppingCart } from "react-icons/fa";
-import { IoStar, IoStarOutline } from "react-icons/io5";
+import ProductRatingBadge from "../reviews/ProductRatingBadge";
 
 export default function ProductCard({ product, index = 0 }) {
   const { addToCart } = useCart();
@@ -101,13 +101,7 @@ export default function ProductCard({ product, index = 0 }) {
           {product.description}
         </p>
 
-        <div className="flex items-center gap-1 text-accent mt-4">
-          <IoStar />
-          <IoStar />
-          <IoStar />
-          <IoStar />
-          <IoStarOutline />
-        </div>
+      <ProductRatingBadge productId={product.id} />
 
         <div className="mt-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <p className="text-2xl sm:text-3xl font-black text-accent">

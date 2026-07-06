@@ -1,31 +1,44 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useState, useContext } from "react";
+import AuthContext from "./AuthContext";
 
 const FavoritesContext = createContext();
 
 export const FavoritesProvider = ({ children }) => {
-  const [favorites, setFavorites] = useState(() => {
-    const storedFavorites = localStorage.getItem("favorites");
-    return storedFavorites ? JSON.parse(storedFavorites) : [];
-  });
+  const { user } = useContext(AuthContext);
+  const [favorites, setFavorites] = useState([]);
+
+  const storageKey = user?.uid || user?.id
+    ? `favorites_${user.uid || user.id}`
+    : "favorites_guest";
 
   useEffect(() => {
-    localStorage.setItem("favorites", JSON.stringify(favorites));
-  }, [favorites]);
+    const storedFavorites = localStorage.getItem(storageKey);
+    setFavorites(storedFavorites ? JSON.parse(storedFavorites) : []);
+  }, [storageKey]);
+
+  useEffect(() => {
+    localStorage.setItem(storageKey, JSON.stringify(favorites));
+  }, [favorites, storageKey]);
 
   const toggleFavorite = (product) => {
-    const exists = favorites.some((item) => item.id === product.id);
+    setFavorites((prev) => {
+      const exists = prev.some((item) => item.id === product.id);
 
-    if (exists) {
-      setFavorites((prev) =>
-        prev.filter((item) => item.id !== product.id)
-      );
-    } else {
-      setFavorites((prev) => [...prev, product]);
-    }
+      if (exists) {
+        return prev.filter((item) => item.id !== product.id);
+      }
+
+      return [...prev, product];
+    });
   };
 
   const isFavorite = (id) => {
     return favorites.some((item) => item.id === id);
+  };
+
+  const clearFavorites = () => {
+    setFavorites([]);
+    localStorage.removeItem(storageKey);
   };
 
   return (
@@ -34,6 +47,7 @@ export const FavoritesProvider = ({ children }) => {
         favorites,
         toggleFavorite,
         isFavorite,
+        clearFavorites,
       }}
     >
       {children}

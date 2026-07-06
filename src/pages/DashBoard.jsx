@@ -1,23 +1,34 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import DashboardSidebar from "../components/dashboard/DashboardSidebar";
 import ProductTable from "../components/dashboard/ProductTable";
 import UserTable from "../components/dashboard/UserTable";
 import CategoryTable from "../components/dashboard/CategoryTable";
 import DashboardHeader from "../components/dashboard/DashboardHeader";
+import ReviewsTable from "../components/dashboard/ReviewsTable";
+import {getAllReviews} from "../services/reviewService";
 
-import { FaBox, FaUsers, FaArrowLeft } from "react-icons/fa";
+import { FaBox, FaUsers, FaArrowLeft,FaComments } from "react-icons/fa";
 
 import { useProducts } from "../hooks/useProducts";
 import { useCategory } from "../hooks/useCategory";
 import { useUser } from "../hooks/useUser";
 
+
+
 export default function Dashboard() {
-  const [tab, setTab] = useState("products", "users", "category");
+  const [tab, setTab] = useState("products", "users", "category", "reviews");
   const { products = [] } = useProducts();
   const {categories = []} = useCategory();
   const { users = [] } = useUser();
+  
   const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  const [reviews, setReviews] = useState([]);
+
+useEffect(() => {
+  getAllReviews().then(setReviews);
+}, []);
 
   return (
     <section className="min-h-screen bg-gradient-to-b from-primary to-[#1A1A1A] flex">
@@ -94,6 +105,26 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
+             <div className="bg-[#181818] border border-[#2A2A2A] rounded-[28px] p-6 shadow-[0_10px_40px_rgba(0,0,0,0.45)]">
+              <div className="flex items-center justify-between">
+                <div>
+                <button onClick={() => setTab("reviews")} className="text-left">
+                <p className="text-gray-400 uppercase text-xs tracking-[4px]">
+                    Reviews
+                  </p>
+
+                  <h3 className="text-4xl font-black text-text mt-3">
+                    {reviews.length}
+                  </h3>
+
+                </button>
+                </div>
+
+                <div className="w-16 h-16 rounded-2xl bg-accent text-primary flex items-center justify-center text-2xl">
+                  <FaComments />
+                </div>
+              </div>
+            </div>
 
             <div className="bg-[#181818] border border-[#2A2A2A] rounded-[28px] p-6 shadow-[0_10px_40px_rgba(0,0,0,0.45)]">
               <div className="flex items-center justify-between">
@@ -148,12 +179,23 @@ export default function Dashboard() {
             >
               Categories
             </button>
+            <button
+  onClick={() => setTab("reviews")}
+  className={`px-6 py-3 rounded-2xl font-semibold transition-all duration-300 border ${
+    tab === "reviews"
+      ? "bg-accent text-primary border-accent shadow-[0_0_25px_rgba(200,169,106,0.25)]"
+      : "bg-[#181818] text-text border-[#2A2A2A] hover:border-accent hover:text-accent"
+  }`}
+>
+  Reviews
+</button>
           </div>
 
           <div className="bg-[#181818] border border-[#2A2A2A] rounded-[32px] p-4 sm:p-6 lg:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.55)] overflow-hidden">
             {tab === "products" && <ProductTable />}
             {tab === "category" && <CategoryTable />}
             {tab === "users" && <UserTable />}
+            {tab === "reviews" && <ReviewsTable />}
 
           </div>
         </main>
