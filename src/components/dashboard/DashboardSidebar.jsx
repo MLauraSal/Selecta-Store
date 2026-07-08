@@ -8,7 +8,6 @@ import {
   FaChevronLeft,
   FaChevronRight,
   FaTags,
-  FaComments,
 } from "react-icons/fa";
 
 export default function DashboardSidebar({
@@ -101,15 +100,6 @@ export default function DashboardSidebar({
           <FaUser />
           {sidebarOpen && "Users"}
         </button>
-
-        <button
-  type="button"
-  onClick={() => setTab("reviews")}
-  className={buttonClass(tab === "reviews")}
->
-  <FaComments />
-  {sidebarOpen && "Reviews"}
-</button>
 
         <Link to="/" className={buttonClass(false)}>
           <FaHome />

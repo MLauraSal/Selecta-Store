@@ -56,7 +56,7 @@ export default function ReviewsList() {
                     {review.userName || "User"}
                   </p>
 
-                  <RankingStars ranking={review.ranking} size={17} />
+                 <RankingStars ranking={review.ranking} size={17} />
                 </div>
               </div>
 

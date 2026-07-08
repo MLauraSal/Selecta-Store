@@ -2,11 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 
-import { useAuth } from "../hooks/useAuth";
-import { useReviews } from "../hooks/useReviews";
-import RankingStars from "../components/reviews/RankingStars";
-import ReviewForm from "../components/reviews/ReviewsForm";
-import ReviewsList from "../components/reviews/ReviewsList";
+import { IoStar, IoStarOutline } from "react-icons/io5";
 import { FaShoppingCart } from "react-icons/fa";
 import { HiArrowLeft } from "react-icons/hi";
 
@@ -27,8 +23,6 @@ export default function ProductDetail() {
 
   const { addToCart } = useCart();
   const { animateToCart } = useFlyToCart();
-  const { user } = useAuth();
-  const { loadReviews, averageRating, reviews } = useReviews();
 
   useEffect(() => {
     getProductById(id)
@@ -43,12 +37,6 @@ export default function ProductDetail() {
       .catch((err) => setError(err.message))
       .finally(() => setCharging(false));
   }, [id]);
-
-   useEffect(() => {
-  if (id) {
-    loadReviews(id, user?.uid);
-  }
-}, [id, user?.uid]);
 
   const getGalleryImages = (item) => {
     if (!item) return [];
@@ -104,7 +92,6 @@ export default function ProductDetail() {
       </div>
     );
   }
- 
 
   const gallery = getGalleryImages(product);
   const categoryName = product.category?.name || product.category || "Product";
@@ -143,9 +130,7 @@ export default function ProductDetail() {
                     key={`${img}-${index}`}
                     onClick={() => setSelectedImage(img)}
                     className={`rounded-2xl overflow-hidden border transition ${
-                      selectedImage === img
-                        ? "border-accent"
-                        : "border-[#2A2A2A]"
+                      selectedImage === img ? "border-accent" : "border-[#2A2A2A]"
                     }`}
                   >
                     <img
@@ -174,14 +159,13 @@ export default function ProductDetail() {
               {product.name}
             </h1>
 
-            <div className="flex items-center gap-3 mt-6">
-              <RankingStars ranking={averageRating} size={24} />
-
-              <span className="text-gray-400 text-sm">
-                {averageRating > 0
-                  ? `${averageRating} (${reviews.length} reviews)`
-                  : "No reviews yet"}
-              </span>
+            <div className="flex items-center gap-1 text-accent mt-6 text-xl">
+              <IoStar />
+              <IoStar />
+              <IoStar />
+              <IoStar />
+              <IoStarOutline />
+              <span className="text-gray-400 text-sm ml-3">4.0 reviews</span>
             </div>
 
             <p className="text-accent text-5xl font-black mt-8">
@@ -199,9 +183,7 @@ export default function ProductDetail() {
                 </p>
 
                 <p className="text-text font-bold mt-2">
-                  {product.stock > 0
-                    ? `${product.stock} available`
-                    : "Not available"}
+                  {product.stock > 0 ? `${product.stock} available` : "Not available"}
                 </p>
               </div>
 
@@ -225,17 +207,6 @@ export default function ProductDetail() {
           </motion.div>
         </div>
       </div>
-      <div className="mt-16 grid lg:grid-cols-[420px_1fr] gap-8">
-  <ReviewForm productId={product.id} />
-
-  <div>
-    <h2 className="text-3xl font-black text-text mb-6">
-      Customer reviews
-    </h2>
-
-    <ReviewsList />
-  </div>
-</div>
     </section>
   );
 }

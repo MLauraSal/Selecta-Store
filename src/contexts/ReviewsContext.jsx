@@ -18,30 +18,29 @@ export const ReviewsProvider = ({ children }) => {
   const [averageRanking, setAverageRanking] = useState(0);
   const [userReview, setUserReview] = useState(null);
 
-  const loadReviews = async (productId, userId = null) => {
-    try {
-      setLoadingReviews(true);
-      setReviewsError(null);
+const loadReviews = async (productId, userId = null) => {
+  try {
+    setLoadingReviews(true);
+    setReviewsError(null);
+  
+    setUserReview(null); 
 
-      const data = await getReviewsByProduct(productId);
+    const data = await getReviewsByProduct(productId);
+    setReviews(data);
+   
+    setAverageRanking(getAverageRanking(data));
 
-      setReviews(data);
-     
-      setAverageRanking(getAverageRanking(data));
-
-      if (userId) {
-        const existingReview = await getUserReviewForProduct(productId, userId);
-        setUserReview(existingReview);
-      } else {
-        setUserReview(null);
-      }
-    } catch (error) {
-      setReviewsError(error.message);
-      console.error("Error loading reviews:", error);
-    } finally {
-      setLoadingReviews(false);
+    if (userId) {
+      const existingReview = await getUserReviewForProduct(productId, userId);
+      setUserReview(existingReview);
     }
-  };
+  } catch (error) {
+    setReviewsError(error.message);
+    console.error("Error loading reviews:", error);
+  } finally {
+    setLoadingReviews(false);
+  }
+};
 
   const addReview = async (reviewData) => {
     const existingReview = await getUserReviewForProduct(
