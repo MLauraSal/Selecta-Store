@@ -8,6 +8,7 @@ import {
   FaChevronLeft,
   FaChevronRight,
   FaTags,
+  FaRegCommentDots, 
 } from "react-icons/fa";
 
 export default function DashboardSidebar({
@@ -67,8 +68,8 @@ export default function DashboardSidebar({
       <nav className="flex flex-col gap-3">
         <button
           type="button"
-          onClick={() => setTab("products")}
-          className={buttonClass(tab === "products")}
+          onClick={() => setTab("overview")}
+          className={buttonClass(tab === "overview")}
         >
           <FaChartLine />
           {sidebarOpen && "Dashboard"}
@@ -99,6 +100,16 @@ export default function DashboardSidebar({
         >
           <FaUser />
           {sidebarOpen && "Users"}
+        </button>
+
+       
+        <button
+          type="button"
+          onClick={() => setTab("reviews")}
+          className={buttonClass(tab === "reviews")}
+        >
+          <FaRegCommentDots />
+          {sidebarOpen && "Reviews"}
         </button>
 
         <Link to="/" className={buttonClass(false)}>
