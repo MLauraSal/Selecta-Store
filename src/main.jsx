@@ -13,8 +13,9 @@ import App from "./App.jsx";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <AuthProvider>
-    <UsersProvider>
       <ReviewsProvider>
+    <UsersProvider>
+      
       <ProductsProvider>
         <CategoriesProvider>
           
@@ -26,8 +27,9 @@ createRoot(document.getElementById("root")).render(
          
         </CategoriesProvider>
       </ProductsProvider>
-      </ReviewsProvider>
+     
     </UsersProvider>
+     </ReviewsProvider>
     </AuthProvider>
   </StrictMode>
 );
