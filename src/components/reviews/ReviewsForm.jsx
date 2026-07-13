@@ -21,11 +21,11 @@ export default function ReviewForm({ productId }) {
     );
   }
 
-  const userReview = getUserReview(productId, user.uid);
+  const userReview = getUserReview(productId, user.uid) || null;
 
   return (
     <ReviewFormContent
-      key={`${productId}-${user.uid}`}
+      key={`${productId}-${userReview?.id ?? "new"}`}
       productId={productId}
       user={user}
       userReview={userReview}

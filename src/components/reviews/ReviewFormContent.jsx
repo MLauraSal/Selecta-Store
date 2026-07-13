@@ -15,12 +15,12 @@ export default function ReviewFormContent({
 
 
 
-  useEffect(() => {
+useEffect(() => {
   setRanking(userReview?.ranking || 5);
   setComment(userReview?.comment || "");
 }, [userReview]);
 
- const buildReviewData = () => ({
+const buildReviewData = () => ({
   productId: String(productId),
   userId: user.uid,
   userName: user.name || user.username || "User",
@@ -28,8 +28,6 @@ export default function ReviewFormContent({
   ranking: Number(ranking),
   comment: comment.trim(),
 });
-
-
   const showSuccessAlert = (title) => {
     Swal.fire({
       icon: "success",
@@ -53,7 +51,7 @@ export default function ReviewFormContent({
     try {
       setLoading(true);
 
-      const reviewData = buildReviewData();
+const reviewData = buildReviewData();
 
 if (userReview) {
     await editReview(userReview.id, reviewData);

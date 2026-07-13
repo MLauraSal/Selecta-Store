@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 
 import DeleteIcon from "@mui/icons-material/Delete";
-import { IoStar, IoStarOutline } from "react-icons/io5"; 
+import RankingStars from "../reviews/RankingStars";
 import {
   getAllReviews,
   deleteReview,
@@ -108,15 +108,21 @@ export default function ReviewsTable() {
                     <div className="flex items-center gap-3">
                     
                        <Avatar
-                        src={review.userPhoto}
-                        sx={{
-                          border: "2px solid #C8A96A",
-                          backgroundColor: "#181818",
-                          color: "#C8A96A",
-                        }}
-                      >
-                        {review.userName?.charAt(0)?.toUpperCase() || "U"}
-                      </Avatar>
+  src={review.userPhoto || undefined}
+  alt={review.userName}
+  imgProps={{
+    referrerPolicy: "no-referrer",
+  }}
+  sx={{
+    width: 44,
+    height: 44,
+    border: "2px solid #C8A96A",
+    backgroundColor: "#181818",
+    color: "#C8A96A",
+  }}
+>
+  {review.userName?.charAt(0)?.toUpperCase() || "U"}
+</Avatar>
 
                       <span className="font-bold text-text">
                         {review.userName || "User"}
@@ -133,13 +139,10 @@ export default function ReviewsTable() {
                  
                   <TableCell sx={tableCellStyles}>
                     <div className="flex items-center gap-1 text-accent text-base">
-                      {[...Array(5)].map((_, i) => (
-                        i < (review.ranking || review.rating || 0) ? (
-                          <IoStar key={i} />
-                        ) : (
-                          <IoStarOutline key={i} />
-                        )
-                      ))}
+                    <RankingStars
+  ranking={review.ranking}
+  size={18}
+/>
                     </div>
                   </TableCell>
 

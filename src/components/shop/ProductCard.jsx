@@ -6,13 +6,13 @@ import { useCart } from "../../hooks/useCart";
 import { useFlyToCart } from "../../hooks/useFlyToCart";
 import { useFavorites } from "../../hooks/useFavorites";
 
-
+import ProductRankingBadge from "../reviews/ProductRankingBadge";
 import { getProductImage } from "../../utils/getProductImage";
 
 import { BsSuitHeartFill, BsSuitHeart } from "react-icons/bs";
 import { HiOutlineEye } from "react-icons/hi";
 import { FaShoppingCart } from "react-icons/fa";
-import { IoStar, IoStarOutline } from "react-icons/io5";
+
 
 export default function ProductCard({ product, index = 0 }) {
   const { addToCart } = useCart();
@@ -108,13 +108,11 @@ export default function ProductCard({ product, index = 0 }) {
         </p>
 
           <div className="flex items-center gap-1 text-accent mt-6 text-xl">
-              <IoStar />
-              <IoStar />
-              <IoStar />
-              <IoStar />
-              <IoStarOutline />
-              <span className="text-gray-400 text-sm ml-3">4.0 reviews</span>
-            </div>
+           <ProductRankingBadge
+              productId={product.id}
+              size={16}
+            />
+          </div>
 
         <div className="mt-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <p className="text-2xl sm:text-3xl font-black text-accent">

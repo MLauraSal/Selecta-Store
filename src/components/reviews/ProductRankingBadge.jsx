@@ -1,29 +1,35 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useReviews } from "../../hooks/useReviews";
 import RankingStars from "./RankingStars";
-import {
-  getReviewsByProduct,
-  getAverageRanking,
-} from "../../services/reviewService";
 
-export default function ProductRankingBadge({ productId, size = 16 }) {
-  const [ranking, setRanking] = useState(0);
-  const [count, setCount] = useState(0);
+export default function ProductRankingBadge({
+  productId,
+  size = 16,
+}) {
+  const {
+    loadReviews,
+    getAverage,
+    getReviews,
+  } = useReviews();
 
   useEffect(() => {
-    if (!productId) return;
+    loadReviews(productId);
+  }, [loadReviews, productId]);
 
-    getReviewsByProduct(productId).then((data) => {
-      setCount(data.length);
-      setRanking(getAverageRanking(data));
-    });
-  }, [productId]);
+  const reviews = getReviews(productId);
+  const average = getAverage(productId);
 
   return (
-    <div className="flex items-center gap-2 text-accent mt-4">
-      <RankingStars ranking={ranking} size={size} />
+    <div className="flex items-center gap-2 mt-4">
+      <RankingStars
+        ranking={average}
+        size={size}
+      />
 
       <span className="text-gray-400 text-xs">
-        {ranking > 0 ? `${ranking} (${count})` : "No reviews"}
+        {reviews.length > 0
+          ? `${average} (${reviews.length})`
+          : "No reviews"}
       </span>
     </div>
   );
