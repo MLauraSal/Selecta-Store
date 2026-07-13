@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 
 import DeleteIcon from "@mui/icons-material/Delete";
-import RankingStars from "../reviews/RankingStars";
+import { IoStar, IoStarOutline } from "react-icons/io5"; 
 import {
   getAllReviews,
   deleteReview,
@@ -50,73 +50,64 @@ export default function ReviewsTable() {
   return (
     <div>
       <div className="mb-6">
-        <p className="text-accent uppercase tracking-[4px] text-xs">
-          Reviews
+        <p className="text-accent uppercase tracking-[4px] text-xs mb-1">
+          Feedback Overview
         </p>
-
-        <h2 className="text-2xl font-black text-text">
-          Review moderation
-        </h2>
+        <h2 className="text-2xl font-black text-text">Customer Reviews</h2>
       </div>
 
       <TableContainer
         sx={{
-          backgroundColor: "#111111",
-          border: "1px solid #2A2A2A",
-          borderRadius: "24px",
-          overflowX: "auto",
+          backgroundColor: "transparent",
+          boxShadow: "none",
         }}
       >
-        <Table>
+        <Table sx={{ minWidth: 650 }} aria-label="reviews table">
           <TableHead>
-            <TableRow sx={{ backgroundColor: "#181818" }}>
-              {["User", "Product ID", "Ranking", "Comment", "Actions"].map(
-                (head) => (
-                  <TableCell
-                    key={head}
-                    align={head === "Actions" ? "right" : "left"}
-                    sx={{
-                      ...tableCellStyles,
-                      color: "#C8A96A",
-                      fontWeight: 800,
-                      textTransform: "uppercase",
-                      letterSpacing: "2px",
-                      fontSize: "11px",
-                    }}
-                  >
-                    {head}
-                  </TableCell>
-                )
-              )}
+            <TableRow>
+              <TableCell sx={{ ...tableCellStyles, fontWeight: "bold" }}>
+                User
+              </TableCell>
+              <TableCell sx={{ ...tableCellStyles, fontWeight: "bold" }}>
+                Product ID
+              </TableCell>
+              <TableCell sx={{ ...tableCellStyles, fontWeight: "bold" }}>
+                Rating
+              </TableCell>
+              <TableCell sx={{ ...tableCellStyles, fontWeight: "bold" }}>
+                Comment
+              </TableCell>
+              <TableCell
+                align="right"
+                sx={{ ...tableCellStyles, fontWeight: "bold" }}
+              >
+                Actions
+              </TableCell>
             </TableRow>
           </TableHead>
-
           <TableBody>
             {loading ? (
               <TableRow>
                 <TableCell colSpan={5} align="center" sx={tableCellStyles}>
-                  Loading reviews...
+                  <p className="text-gray-400 italic py-4">Loading reviews...</p>
                 </TableCell>
               </TableRow>
             ) : reviews.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} align="center" sx={tableCellStyles}>
-                  There are no reviews.
+                  <p className="text-gray-400 italic py-4">No reviews found.</p>
                 </TableCell>
               </TableRow>
             ) : (
               reviews.map((review) => (
                 <TableRow
                   key={review.id}
-                  sx={{
-                    "&:hover": {
-                      backgroundColor: "rgba(200,169,106,0.06)",
-                    },
-                  }}
+                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
                 >
-                  <TableCell sx={tableCellStyles}>
+                  <TableCell component="th" scope="row" sx={tableCellStyles}>
                     <div className="flex items-center gap-3">
-                      <Avatar
+                    
+                       <Avatar
                         src={review.userPhoto}
                         sx={{
                           border: "2px solid #C8A96A",
@@ -139,8 +130,17 @@ export default function ReviewsTable() {
                     </span>
                   </TableCell>
 
+                 
                   <TableCell sx={tableCellStyles}>
-                    <RankingStars ranking={review.ranking} size={17} />
+                    <div className="flex items-center gap-1 text-accent text-base">
+                      {[...Array(5)].map((_, i) => (
+                        i < (review.ranking || review.rating || 0) ? (
+                          <IoStar key={i} />
+                        ) : (
+                          <IoStarOutline key={i} />
+                        )
+                      ))}
+                    </div>
                   </TableCell>
 
                   <TableCell sx={tableCellStyles}>

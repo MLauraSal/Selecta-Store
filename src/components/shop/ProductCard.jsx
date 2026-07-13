@@ -1,12 +1,14 @@
 import { Link } from "react-router-dom";
-import { useRef, useEffect } from "react";
+import { useRef } from "react";
 import { motion } from "framer-motion";
 
 import { useCart } from "../../hooks/useCart";
 import { useFlyToCart } from "../../hooks/useFlyToCart";
 import { useFavorites } from "../../hooks/useFavorites";
+
+
 import { getProductImage } from "../../utils/getProductImage";
-import { useReviews } from "../../hooks/useReviews";
+
 import { BsSuitHeartFill, BsSuitHeart } from "react-icons/bs";
 import { HiOutlineEye } from "react-icons/hi";
 import { FaShoppingCart } from "react-icons/fa";
@@ -16,19 +18,14 @@ export default function ProductCard({ product, index = 0 }) {
   const { addToCart } = useCart();
   const { animateToCart } = useFlyToCart();
   const { toggleFavorite, isFavorite } = useFavorites();
-  const { reviews, fetchReviewsForProduct, getAverageRanking } = useReviews();
+
   const imageRef = useRef(null);
   const favorite = isFavorite(product.id);
 
   
-  useEffect(() => {
-    if (product?.id && !reviews[product.id]) {
-      fetchReviewsForProduct(product.id);
-    }
-  }, [product?.id, fetchReviewsForProduct, reviews]);
 
-  const productReviews = reviews[product.id] || [];
-  const average = productReviews.length > 0 ? getAverageRanking(productReviews) : (product.averageRating || 0);
+
+  
   const productImage = getProductImage(product);
   const categoryName = product.category?.name || product.category || "Product";
 
@@ -110,14 +107,14 @@ export default function ProductCard({ product, index = 0 }) {
           {product.description}
         </p>
 
-        <div className="flex items-center gap-1 text-accent mt-6 text-xl">
-          {[...Array(5)].map((_, i) => (
-            i < Math.round(average) ? <IoStar key={i} /> : <IoStarOutline key={i} />
-          ))}
-          <span className="text-gray-400 text-sm ml-3">
-            {average > 0 ? `${average} (${productReviews.length} reviews)` : "No reviews yet"}
-          </span>
-        </div>
+          <div className="flex items-center gap-1 text-accent mt-6 text-xl">
+              <IoStar />
+              <IoStar />
+              <IoStar />
+              <IoStar />
+              <IoStarOutline />
+              <span className="text-gray-400 text-sm ml-3">4.0 reviews</span>
+            </div>
 
         <div className="mt-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <p className="text-2xl sm:text-3xl font-black text-accent">

@@ -7,6 +7,7 @@ import {
   doc,
   query,
   where,
+  orderBy,
   serverTimestamp,
 } from "firebase/firestore";
 
@@ -16,17 +17,13 @@ const reviewsCollection = collection(db, "reviews");
 
 export const getAllReviews = async () => {
   try {
-    const snapshot = await getDocs(reviewsCollection);
-    const reviews = snapshot.docs.map((doc) => ({
+    const q = query(reviewsCollection, orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(q);
+
+    return snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
-   
-    return reviews.sort((a, b) => {
-      const dateA = a.createdAt?.seconds || 0;
-      const dateB = b.createdAt?.seconds || 0;
-      return dateB - dateA;
-    });
   } catch (error) {
     console.error("Error getting all reviews:", error);
     return [];
@@ -35,25 +32,18 @@ export const getAllReviews = async () => {
 
 export const getReviewsByProduct = async (productId) => {
   try {
-   
     const q = query(
       reviewsCollection,
-      where("productId", "==", productId)
+      where("productId", "==", productId),
+      orderBy("createdAt", "desc")
     );
 
     const snapshot = await getDocs(q);
 
-    const reviews = snapshot.docs.map((doc) => ({
+    return snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
-
-  
-    return reviews.sort((a, b) => {
-      const dateA = a.createdAt?.seconds || 0;
-      const dateB = b.createdAt?.seconds || 0;
-      return dateB - dateA;
-    });
   } catch (error) {
     console.error("Error getting reviews:", error);
     return [];
@@ -71,8 +61,8 @@ export const createReview = async (reviewData) => {
     return {
       id: docRef.id,
       ...reviewData,
-      createdAt: { seconds: Math.floor(Date.now() / 1000) },
-      updatedAt: { seconds: Math.floor(Date.now() / 1000) },
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
   } catch (error) {
     console.error("Error creating review:", error);
@@ -92,7 +82,7 @@ export const updateReview = async (id, reviewData) => {
     return {
       id,
       ...reviewData,
-      updatedAt: { seconds: Math.floor(Date.now() / 1000) },
+      updatedAt: new Date(),
     };
   } catch (error) {
     console.error("Error updating review:", error);
@@ -104,6 +94,7 @@ export const deleteReview = async (id) => {
   try {
     const reviewRef = doc(db, "reviews", id);
     await deleteDoc(reviewRef);
+
     return id;
   } catch (error) {
     console.error("Error deleting review:", error);
@@ -120,9 +111,11 @@ export const getUserReviewForProduct = async (productId, userId) => {
     );
 
     const snapshot = await getDocs(q);
+
     if (snapshot.empty) return null;
 
     const reviewDoc = snapshot.docs[0];
+
     return {
       id: reviewDoc.id,
       ...reviewDoc.data(),
